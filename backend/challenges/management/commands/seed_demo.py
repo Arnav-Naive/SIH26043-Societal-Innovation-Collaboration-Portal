@@ -18,6 +18,7 @@ class Command(BaseCommand):
         self._seed_challenges()
         self._seed_teams_and_milestones()
         self._seed_industry()
+        self._seed_duplicate_pairs()
         self.stdout.write(self.style.SUCCESS('Demo data seeded successfully!'))
         self._print_credentials()
 
@@ -484,6 +485,119 @@ class Command(BaseCommand):
                 self.stdout.write('  Created partnership for challenge CHL-00001')
             except ProjectTeam.DoesNotExist:
                 pass
+
+    def _seed_duplicate_pairs(self):
+        """
+        Create 2 pairs of deliberately similar challenges (same category + district,
+        different phrasing) to demonstrate duplicate detection.
+        """
+        from challenges.models import Challenge, ChallengeStatusHistory, DuplicateFlag
+        from challenges.categorizer import categorize_challenge, compute_priority
+
+        self.stdout.write(self.style.MIGRATE_HEADING('  Seeding duplicate detection demo pairs...'))
+
+        citizen = self.users['citizen1']
+        ranchi = self.districts['Ranchi']
+        water_cat = self.categories['Water']
+        infra_cat = self.categories['Infrastructure']
+
+        # ── Pair 1: Water, Ranchi ──
+        pair1_challenges = [
+            {
+                'title': 'Contaminated drinking water supply in Kanke area of Ranchi',
+                'description': (
+                    'Residents of Kanke block in Ranchi are facing severe contamination '
+                    'in their drinking water supply. The piped water has a yellowish tint '
+                    'and foul odour. Multiple families have reported gastrointestinal '
+                    'illnesses after consuming the water. Water quality testing is urgently '
+                    'needed along with provision of clean water through tanker supply.'
+                ),
+            },
+            {
+                'title': 'Unsafe and polluted water sources in Kanke block, Ranchi',
+                'description': (
+                    'The water supply in Kanke area of Ranchi district is heavily polluted '
+                    'and unsafe for drinking. The tap water appears discoloured and smells '
+                    'bad. Several residents, especially children, have fallen sick with '
+                    'stomach infections after drinking this water. Immediate water quality '
+                    'assessment and emergency clean water provision is required.'
+                ),
+            },
+        ]
+
+        # ── Pair 2: Infrastructure, Ranchi ──
+        pair2_challenges = [
+            {
+                'title': 'Frequent power outages disrupting daily life in Doranda, Ranchi',
+                'description': (
+                    'Residents in Doranda locality of Ranchi are experiencing frequent and '
+                    'prolonged power outages lasting 8-10 hours daily. The electricity supply '
+                    'infrastructure is outdated with rusted transformers and damaged power '
+                    'lines. Small businesses are suffering losses and students cannot study '
+                    'after dark. Urgent upgrading of electrical infrastructure is needed.'
+                ),
+            },
+            {
+                'title': 'Electricity supply failures causing hardship in Doranda locality, Ranchi',
+                'description': (
+                    'The Doranda area in Ranchi has been facing severe electricity disruptions '
+                    'with daily power cuts of 8 to 10 hours. Old and poorly maintained '
+                    'transformers and power cables are the root cause. Local shops lose '
+                    'revenue and children are unable to study in the evenings. The power '
+                    'distribution infrastructure needs immediate repair and modernization.'
+                ),
+            },
+        ]
+
+        all_pairs = [
+            (pair1_challenges, water_cat),
+            (pair2_challenges, infra_cat),
+        ]
+
+        created_challenges = []
+        for pair, category in all_pairs:
+            for data in pair:
+                challenge, created = Challenge.objects.get_or_create(
+                    title=data['title'],
+                    defaults={
+                        'citizen': citizen,
+                        'description': data['description'],
+                        'district': ranchi,
+                        'location': 'Ranchi Urban',
+                        'category': category,
+                        'category_confidence': 95,
+                        'category_reason': 'Seeded for duplicate detection demo',
+                        'priority': 'MEDIUM',
+                        'status': Challenge.STATUS_SUBMITTED,
+                        'classification_source': 'keyword',
+                    }
+                )
+                if created:
+                    ChallengeStatusHistory.objects.create(
+                        challenge=challenge,
+                        status='SUBMITTED',
+                        changed_by=citizen,
+                        note='Challenge submitted by citizen.',
+                    )
+                    self.stdout.write(f'    Created duplicate-demo challenge: {challenge.reference_id}')
+                created_challenges.append(challenge)
+
+        # Run duplicate detection to generate embeddings and DuplicateFlag records
+        try:
+            from challenges.duplicate_detection import detect_duplicates
+            total_flags = 0
+            for challenge in created_challenges:
+                flags = detect_duplicates(challenge)
+                total_flags += flags
+
+            flag_count = DuplicateFlag.objects.filter(status='pending_review').count()
+            self.stdout.write(
+                self.style.SUCCESS(f'    Duplicate detection complete: {flag_count} pending flag(s) created.')
+            )
+        except Exception as exc:
+            self.stdout.write(
+                self.style.WARNING(f'    Duplicate detection skipped (model may not be available): {exc}')
+            )
 
     def _print_credentials(self):
         self.stdout.write('')

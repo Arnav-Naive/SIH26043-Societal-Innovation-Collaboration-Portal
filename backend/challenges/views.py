@@ -7,6 +7,8 @@ NEW additions only:
 - run_ai_pipeline() helper — called after challenge creation
 - ChallengeAIOverrideView — admin accepts or overrides AI result
 - ChallengeAIReprocessView — admin triggers re-classification
+- DuplicateFlagListView — list duplicate flags for admin review
+- DuplicateFlagReviewView — admin confirms or dismisses duplicate flags
 """
 
 import logging
@@ -17,12 +19,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Q
 
+from django.shortcuts import get_object_or_404
+
 from accounts.permissions import IsCitizen, IsGovAdmin, IsGovAdminOrHEISPOC
-from .models import Challenge, ChallengeMedia, ChallengeStatusHistory
+from .models import Challenge, ChallengeMedia, ChallengeStatusHistory, DuplicateFlag
 from .serializers import (
     ChallengeSubmitSerializer, ChallengeListSerializer,
     ChallengeDetailSerializer, ChallengeMediaSerializer,
-    AIOverrideSerializer,
+    AIOverrideSerializer, DuplicateFlagSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -181,6 +185,10 @@ class ChallengeSubmitView(APIView):
 
         # Refresh from DB to get AI-updated fields
         challenge.refresh_from_db()
+
+        # ── Run duplicate detection (needs category to be set first) ──
+        from .duplicate_detection import detect_duplicates
+        detect_duplicates(challenge)
 
         return Response(
             ChallengeDetailSerializer(challenge, context={'request': request}).data,
@@ -503,3 +511,59 @@ class ChallengeAIReprocessView(APIView):
         )
 
         return Response(ChallengeDetailSerializer(challenge, context={'request': request}).data)
+
+
+# ─── NEW: Duplicate Detection Review Views ────────────────────────────────────
+
+class DuplicateFlagListView(generics.ListAPIView):
+    """
+    GET /api/duplicate-flags/?status=pending_review
+    Lists duplicate flags for gov_admin review.
+    Includes full challenge details for side-by-side comparison.
+    Uses select_related to avoid N+1 queries.
+    """
+    permission_classes = [IsGovAdmin]
+    serializer_class = DuplicateFlagSerializer
+
+    def get_queryset(self):
+        qs = DuplicateFlag.objects.select_related(
+            'challenge_a__citizen',
+            'challenge_a__district',
+            'challenge_a__category',
+            'challenge_a__assigned_university',
+            'challenge_b__citizen',
+            'challenge_b__district',
+            'challenge_b__category',
+            'challenge_b__assigned_university',
+            'reviewed_by',
+        )
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        return qs
+
+
+class DuplicateFlagReviewView(APIView):
+    """
+    PATCH /api/duplicate-flags/{id}/review/
+    body: { "decision": "confirmed_duplicate" | "not_duplicate" }
+    Gov admin only.
+    """
+    permission_classes = [IsGovAdmin]
+
+    def patch(self, request, pk):
+        flag = get_object_or_404(DuplicateFlag, pk=pk)
+        decision = request.data.get('decision')
+
+        if decision not in ('confirmed_duplicate', 'not_duplicate'):
+            return Response(
+                {'detail': 'Invalid decision. Use "confirmed_duplicate" or "not_duplicate".'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        flag.status = decision
+        flag.reviewed_by = request.user
+        flag.reviewed_at = timezone.now()
+        flag.save(update_fields=['status', 'reviewed_by', 'reviewed_at'])
+
+        return Response(DuplicateFlagSerializer(flag).data)

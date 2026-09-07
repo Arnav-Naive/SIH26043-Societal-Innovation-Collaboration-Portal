@@ -139,3 +139,6 @@ except Exception:
     GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
     GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-1.5-flash')
     AI_TIMEOUT_SECONDS = int(os.environ.get('AI_TIMEOUT_SECONDS', 10))
+
+# ─── Semantic Duplicate Detection ────────────────────────────────────────────
+SIMILARITY_THRESHOLD = 0.80  # Cosine similarity above this triggers a DuplicateFlag

@@ -33,3 +33,11 @@ export const overrideAI = (id, data) =>
 
 export const reprocessAI = (id) =>
   axiosClient.post(`/challenges/${id}/ai-reprocess/`)
+
+// ─── Duplicate Detection ─────────────────────────────────────────────────────
+
+export const getDuplicateFlags = (params) =>
+  axiosClient.get('/duplicate-flags/', { params })
+
+export const reviewDuplicateFlag = (id, decision) =>
+  axiosClient.patch(`/duplicate-flags/${id}/review/`, { decision })
