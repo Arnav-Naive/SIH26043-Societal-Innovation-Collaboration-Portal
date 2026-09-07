@@ -35,12 +35,17 @@ class ChallengeListSerializer(serializers.ModelSerializer):
     citizen_name = serializers.SerializerMethodField()
     assigned_university_name = serializers.SerializerMethodField()
     media_count = serializers.SerializerMethodField()
+    district = serializers.StringRelatedField()
+    category = serializers.StringRelatedField()
+    classification_source = serializers.CharField(read_only=True)
+    priority_score = serializers.FloatField(read_only=True)
 
     class Meta:
         model = Challenge
         fields = (
             'id', 'reference_id', 'title', 'district', 'category',
-            'category_confidence', 'priority', 'status',
+            'category_confidence', 'priority', 'priority_score',
+            'classification_source', 'status',
             'citizen_name', 'assigned_university_name', 'media_count',
             'created_at', 'updated_at',
         )
@@ -61,6 +66,14 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
     status_history = ChallengeStatusHistorySerializer(many=True, read_only=True)
     assigned_university_name = serializers.SerializerMethodField()
     assigned_university_id = serializers.SerializerMethodField()
+    district = serializers.StringRelatedField()
+    category = serializers.StringRelatedField()
+    manual_category_name = serializers.SerializerMethodField()
+
+    # Nested AI classification block
+    ai_classification = serializers.SerializerMethodField()
+    # Nested priority detail block
+    priority_detail = serializers.SerializerMethodField()
 
     class Meta:
         model = Challenge
@@ -71,9 +84,24 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
             'original_language', 'normalized_description', 'normalization_note',
             'citizen', 'assigned_university_id', 'assigned_university_name',
             'media', 'status_history',
+            # AI fields
+            'ai_category_name', 'ai_confidence', 'ai_classification_reason',
+            'classification_source', 'ai_processed_at',
+            'manual_category_name',
+            'ai_classification',
+            # Priority fields
+            'priority_score', 'priority_breakdown', 'priority_reason',
+            'severity', 'frequency', 'affected_population', 'urgency',
+            'manual_priority',
+            'priority_detail',
             'created_at', 'updated_at',
         )
-        read_only_fields = ('original_language', 'normalized_description', 'normalization_note')
+        read_only_fields = (
+            'original_language', 'normalized_description', 'normalization_note',
+            'ai_category_name', 'ai_confidence', 'ai_classification_reason',
+            'classification_source', 'ai_processed_at',
+            'priority_score', 'priority_breakdown', 'priority_reason',
+        )
 
     def get_assigned_university_name(self, obj):
         return obj.assigned_university.name if obj.assigned_university else None
@@ -81,8 +109,62 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
     def get_assigned_university_id(self, obj):
         return obj.assigned_university.id if obj.assigned_university else None
 
+    def get_manual_category_name(self, obj):
+        return obj.manual_category.name if obj.manual_category else None
+
+    def get_ai_classification(self, obj):
+        """Structured AI classification block for frontend."""
+        accepted_by_name = None
+        if obj.ai_accepted_by:
+            accepted_by_name = obj.ai_accepted_by.get_full_name() or obj.ai_accepted_by.username
+
+        return {
+            "ai_category": obj.ai_category_name or None,
+            "confidence": round(obj.ai_confidence * 100, 0) if obj.ai_confidence else 0,
+            "reason": obj.ai_classification_reason or '',
+            "visual_evidence": obj.ai_visual_evidence,
+            "source": obj.classification_source or 'keyword',
+            "processed_at": obj.ai_processed_at,
+            # Review state — persisted in DB, survives refresh
+            "review_status": obj.ai_review_status,   # 'pending' | 'accepted' | 'overridden'
+            "accepted_by": accepted_by_name,
+            "accepted_at": obj.ai_accepted_at,
+            # Override details
+            "override_applied": obj.ai_override_applied,
+            "manual_category": self.get_manual_category_name(obj),
+            "manual_priority": obj.manual_priority or None,
+            # Final effective values
+            "final_category": (obj.manual_category.name if obj.manual_category else obj.ai_category_name) or None,
+        }
+
+    def get_priority_detail(self, obj):
+        """Structured priority block for frontend."""
+        breakdown = obj.priority_breakdown or {}
+        return {
+            "score": obj.priority_score,
+            "level": obj.effective_priority,
+            "reason": obj.priority_reason or '',
+            "breakdown": {
+                "severity": breakdown.get('severity', 0),
+                "frequency": breakdown.get('frequency', 0),
+                "validation": breakdown.get('validation_score', 0),
+                "affected_population": breakdown.get('affected_population', 0),
+                "urgency": breakdown.get('urgency', 0),
+            },
+        }
+
 
 class ChallengeSubmitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Challenge
         fields = ('title', 'description', 'district', 'location')
+
+
+class AIOverrideSerializer(serializers.Serializer):
+    """Validates admin override input."""
+    category_name = serializers.CharField(required=False, allow_blank=True)
+    priority = serializers.ChoiceField(
+        choices=['LOW', 'MEDIUM', 'HIGH', ''],
+        required=False, allow_blank=True
+    )
+    override_reason = serializers.CharField(required=False, allow_blank=True)

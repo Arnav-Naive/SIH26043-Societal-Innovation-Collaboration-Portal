@@ -4,8 +4,10 @@ import TopHeader from '../../components/common/TopHeader'
 import StatusBadge from '../../components/common/StatusBadge'
 import StatusTimeline from '../../components/common/StatusTimeline'
 import LoadingPage from '../../components/common/LoadingPage'
+import AIClassificationPanel from '../../components/admin/AIClassificationPanel'
 import { getChallengeDetail, reviewChallenge, routeChallenge, updatePriority } from '../../api/challenges'
 import { getRecommendedUniversities } from '../../api/universities'
+import axiosClient from '../../api/axiosClient'
 
 function formatDate(dt) {
   if (!dt) return '—'
@@ -128,10 +130,20 @@ export default function AdminChallengeDetail() {
   const [actionLoading, setActionLoading] = useState(false)
   const [actionError, setActionError] = useState('')
   const [actionSuccess, setActionSuccess] = useState('')
+  const [availableCategories, setAvailableCategories] = useState([])
 
   useEffect(() => {
-    getChallengeDetail(id)
-      .then(({ data }) => setChallenge(data))
+    Promise.all([
+      getChallengeDetail(id),
+      axiosClient.get('/master/categories/').catch(() => ({ data: [] }))
+    ])
+      .then(([{ data }, { data: cats }]) => {
+        setChallenge(data)
+        const catNames = Array.isArray(cats)
+          ? cats.map(c => c.name)
+          : (cats.results || []).map(c => c.name)
+        setAvailableCategories(catNames)
+      })
       .catch(() => setError('Unable to load challenge details.'))
       .finally(() => setLoading(false))
   }, [id])
@@ -241,6 +253,13 @@ export default function AdminChallengeDetail() {
             </div>
           </div>
         </div>
+
+        {/* AI Classification & Priority Panel */}
+        <AIClassificationPanel
+          challenge={challenge}
+          onUpdate={setChallenge}
+          availableCategories={availableCategories}
+        />
 
         {/* Status Timeline */}
         <div className="card" style={{ marginBottom: 20 }}>

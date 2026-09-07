@@ -27,7 +27,17 @@ class Challenge(models.Model):
         (PRIORITY_HIGH, 'High'),
     ]
 
-    # Reference ID (e.g. CHL-00021)
+    SOURCE_AI = 'ai'
+    SOURCE_KEYWORD = 'keyword'
+    SOURCE_FALLBACK = 'fallback'
+
+    SOURCE_CHOICES = [
+        (SOURCE_AI, 'AI (Gemini)'),
+        (SOURCE_KEYWORD, 'Keyword Rules'),
+        (SOURCE_FALLBACK, 'Fallback'),
+    ]
+
+    # ── Reference ID (e.g. CHL-00021) ──
     reference_id = models.CharField(max_length=20, unique=True, blank=True)
 
     citizen = models.ForeignKey(
@@ -39,7 +49,7 @@ class Challenge(models.Model):
     title = models.CharField(max_length=300)
     description = models.TextField()
 
-    # Multilingual intake & normalization fields (NEW)
+    # Multilingual intake & normalization fields
     original_language = models.CharField(max_length=10, blank=True, default='en')
     normalized_description = models.TextField(blank=True)
     normalization_note = models.CharField(max_length=255, blank=True)
@@ -52,6 +62,8 @@ class Challenge(models.Model):
     )
     location = models.CharField(max_length=300, blank=True)
 
+    # ── Active / admin-visible category & priority ──
+    # These hold the current accepted values (AI result unless admin overrode them)
     category = models.ForeignKey(
         'master_data.Category',
         on_delete=models.RESTRICT,
@@ -72,6 +84,92 @@ class Challenge(models.Model):
     )
     routing_note = models.TextField(blank=True)
 
+    # ── AI Classification fields (preserved for audit, never overwritten) ──
+    ai_category_name = models.CharField(
+        max_length=100, blank=True,
+        help_text="AI-predicted category name — preserved even after admin override"
+    )
+    ai_confidence = models.FloatField(
+        default=0.0,
+        help_text="Raw AI confidence 0.0–1.0"
+    )
+    ai_classification_reason = models.TextField(
+        blank=True,
+        help_text="AI-generated classification explanation"
+    )
+    ai_visual_evidence = models.TextField(
+        blank=True,
+        help_text="AI-extracted visual evidence from attached photos"
+    )
+    classification_source = models.CharField(
+        max_length=10, choices=SOURCE_CHOICES,
+        blank=True, default='',
+        help_text="Source of current category: ai, keyword, or fallback"
+    )
+    ai_processed_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text="When AI pipeline last ran"
+    )
+
+    # ── Admin AI review decision (persisted for refresh-safe state) ──
+    ai_accepted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='accepted_ai_challenges',
+        help_text="Admin who explicitly accepted the AI classification"
+    )
+    ai_accepted_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text="When admin accepted the AI classification"
+    )
+
+    # ── Admin manual overrides (null = admin accepted AI result) ──
+    manual_category = models.ForeignKey(
+        'master_data.Category',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='manual_challenges',
+        help_text="Admin-chosen category override (null = accepted AI result)"
+    )
+    manual_priority = models.CharField(
+        max_length=10, choices=PRIORITY_CHOICES,
+        blank=True,
+        help_text="Admin-chosen priority override (blank = accepted AI result)"
+    )
+
+    # ── Priority engine output ──
+    priority_score = models.FloatField(
+        default=0.0,
+        help_text="Calculated priority score 0–100"
+    )
+    priority_breakdown = models.JSONField(
+        default=dict,
+        help_text="Factor-by-factor priority breakdown"
+    )
+    priority_reason = models.TextField(
+        blank=True,
+        help_text="Human-readable explanation of priority score"
+    )
+
+    # ── Priority input factors (1–5 scale) ──
+    severity = models.PositiveSmallIntegerField(
+        default=0,
+        help_text="Severity of impact (1–5; 0 = not yet assessed)"
+    )
+    frequency = models.PositiveSmallIntegerField(
+        default=0,
+        help_text="Recurrence frequency (1–5; 0 = not yet assessed)"
+    )
+    affected_population = models.PositiveSmallIntegerField(
+        default=0,
+        help_text="Scale of affected population (1–5; 0 = inferred from text)"
+    )
+    urgency = models.PositiveSmallIntegerField(
+        default=0,
+        help_text="Urgency of intervention (1–5; 0 = inferred from text)"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -89,6 +187,35 @@ class Challenge(models.Model):
             Challenge.objects.filter(pk=self.pk).update(reference_id=self.reference_id)
         else:
             super().save(*args, **kwargs)
+
+    @property
+    def effective_category(self):
+        """Returns admin override category if set, else AI/keyword category."""
+        return self.manual_category or self.category
+
+    @property
+    def effective_priority(self):
+        """Returns admin override priority if set, else computed priority."""
+        return self.manual_priority or self.priority
+
+    @property
+    def ai_override_applied(self):
+        """True if admin has manually overridden either category or priority."""
+        return bool(self.manual_category_id or self.manual_priority)
+
+    @property
+    def ai_review_status(self):
+        """
+        Returns the admin review state of the AI classification:
+          'accepted'  — admin explicitly accepted the AI result
+          'overridden' — admin chose a different category or priority
+          'pending'   — no admin action taken yet
+        """
+        if self.manual_category_id or self.manual_priority:
+            return 'overridden'
+        if self.ai_accepted_by_id:
+            return 'accepted'
+        return 'pending'
 
 
 class ChallengeMedia(models.Model):
