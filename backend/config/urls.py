@@ -7,6 +7,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
     path('api/challenges/', include('challenges.urls')),
+    path('api/duplicate-flags/', include('challenges.duplicate_urls')),
     path('api/universities/', include('universities.urls')),
     path('api/projects/', include('projects.urls')),
     path('api/industry/', include('industry.urls')),

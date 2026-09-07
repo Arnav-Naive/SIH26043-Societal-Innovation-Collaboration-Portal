@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Challenge, ChallengeMedia, ChallengeStatusHistory
+from .models import Challenge, ChallengeMedia, ChallengeStatusHistory, DuplicateFlag
 from accounts.serializers import UserSerializer
 
 
@@ -168,3 +168,25 @@ class AIOverrideSerializer(serializers.Serializer):
         required=False, allow_blank=True
     )
     override_reason = serializers.CharField(required=False, allow_blank=True)
+
+
+class DuplicateFlagSerializer(serializers.ModelSerializer):
+    """
+    Serializes DuplicateFlag with nested challenge details
+    so the admin can compare side-by-side without extra API calls.
+    """
+    challenge_a = ChallengeListSerializer(read_only=True)
+    challenge_b = ChallengeListSerializer(read_only=True)
+    reviewed_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DuplicateFlag
+        fields = (
+            'id', 'challenge_a', 'challenge_b', 'similarity_score',
+            'status', 'reviewed_by_name', 'reviewed_at', 'created_at',
+        )
+
+    def get_reviewed_by_name(self, obj):
+        if obj.reviewed_by:
+            return obj.reviewed_by.get_full_name() or obj.reviewed_by.username
+        return None

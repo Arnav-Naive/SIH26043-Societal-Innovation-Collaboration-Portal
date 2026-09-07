@@ -15,6 +15,7 @@ const CitizenChallengeDetail = lazy(() => import('../pages/citizen/ChallengeDeta
 const AdminDashboard = lazy(() => import('../pages/admin/Dashboard'))
 const AdminChallengeDetail = lazy(() => import('../pages/admin/ChallengeDetail'))
 const AdminDataTablePage = lazy(() => import('../pages/admin/AdminDataTablePage'))
+const DuplicateReview = lazy(() => import('../pages/admin/DuplicateReview'))
 
 const AssignedChallenges = lazy(() => import('../pages/hei/AssignedChallenges'))
 const FormTeam = lazy(() => import('../pages/hei/FormTeam'))
@@ -64,6 +65,9 @@ export default function AppRoutes() {
         } />
         <Route path="/admin/challenges/:id" element={
           <ProtectedRoute allowedRoles={['gov_admin']}><AdminChallengeDetail /></ProtectedRoute>
+        } />
+        <Route path="/admin/duplicate-review" element={
+          <ProtectedRoute allowedRoles={['gov_admin']}><DuplicateReview /></ProtectedRoute>
         } />
         <Route path="/admin/:entity" element={
           <ProtectedRoute allowedRoles={['gov_admin']}><AdminDataTablePage /></ProtectedRoute>

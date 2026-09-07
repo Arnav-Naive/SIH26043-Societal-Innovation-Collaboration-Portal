@@ -21,6 +21,7 @@ const NAV_ITEMS = {
     ]},
     { group: 'ECOSYSTEM', items: [
       { to: '/admin/challenges', label: 'Challenges', icon: '📁' },
+      { to: '/admin/duplicate-review', label: 'Duplicate Review', icon: '🔀' },
       { to: '/admin/universities', label: 'Universities', icon: '🎓' },
       { to: '/admin/industry', label: 'Industry Partners', icon: '🏭' },
     ]},

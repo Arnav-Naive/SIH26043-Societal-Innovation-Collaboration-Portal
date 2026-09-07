@@ -170,6 +170,12 @@ class Challenge(models.Model):
         help_text="Urgency of intervention (1–5; 0 = inferred from text)"
     )
 
+    # ── Semantic duplicate detection ──
+    embedding = models.JSONField(
+        null=True, blank=True,
+        help_text="Sentence-transformer embedding vector (list of floats)"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -252,3 +258,55 @@ class ChallengeStatusHistory(models.Model):
 
     def __str__(self):
         return f'{self.challenge.reference_id} → {self.status}'
+
+
+class DuplicateFlag(models.Model):
+    """
+    Records a potential duplicate pair detected by semantic similarity.
+    Only created when cosine similarity exceeds SIMILARITY_THRESHOLD.
+    Gov admins review and confirm or dismiss.
+    """
+    STATUS_PENDING = 'pending_review'
+    STATUS_CONFIRMED = 'confirmed_duplicate'
+    STATUS_NOT_DUPLICATE = 'not_duplicate'
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending Review'),
+        (STATUS_CONFIRMED, 'Confirmed Duplicate'),
+        (STATUS_NOT_DUPLICATE, 'Not a Duplicate'),
+    ]
+
+    challenge_a = models.ForeignKey(
+        Challenge, on_delete=models.CASCADE,
+        related_name='duplicate_flags_as_a',
+        help_text="First challenge in the potential duplicate pair"
+    )
+    challenge_b = models.ForeignKey(
+        Challenge, on_delete=models.CASCADE,
+        related_name='duplicate_flags_as_b',
+        help_text="Second challenge in the potential duplicate pair"
+    )
+    similarity_score = models.FloatField(
+        help_text="Cosine similarity between the two challenge embeddings (0.0–1.0)"
+    )
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        help_text="Admin who reviewed this flag"
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = [('challenge_a', 'challenge_b')]
+
+    def __str__(self):
+        return (
+            f'DuplicateFlag: {self.challenge_a.reference_id} ↔ '
+            f'{self.challenge_b.reference_id} ({self.similarity_score:.0%})'
+        )
