@@ -68,10 +68,12 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
             'id', 'reference_id', 'title', 'description', 'district', 'location',
             'category', 'category_confidence', 'category_reason',
             'priority', 'status', 'routing_note',
+            'original_language', 'normalized_description', 'normalization_note',
             'citizen', 'assigned_university_id', 'assigned_university_name',
             'media', 'status_history',
             'created_at', 'updated_at',
         )
+        read_only_fields = ('original_language', 'normalized_description', 'normalization_note')
 
     def get_assigned_university_name(self, obj):
         return obj.assigned_university.name if obj.assigned_university else None

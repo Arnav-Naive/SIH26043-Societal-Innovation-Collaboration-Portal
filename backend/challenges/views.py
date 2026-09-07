@@ -84,11 +84,11 @@ class AdminChallengeListView(generics.ListAPIView):
         priority = self.request.query_params.get('priority', '')
 
         if q:
-            qs = qs.filter(Q(title__icontains=q) | Q(reference_id__icontains=q) | Q(district__icontains=q))
+            qs = qs.filter(Q(title__icontains=q) | Q(reference_id__icontains=q) | Q(district__name__icontains=q))
         if category:
-            qs = qs.filter(category=category)
+            qs = qs.filter(category__name=category)
         if district:
-            qs = qs.filter(district__icontains=district)
+            qs = qs.filter(district__name__icontains=district)
         if status_filter:
             qs = qs.filter(status=status_filter)
         if priority:

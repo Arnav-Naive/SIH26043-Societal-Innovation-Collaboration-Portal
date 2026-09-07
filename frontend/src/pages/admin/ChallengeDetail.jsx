@@ -256,9 +256,24 @@ export default function AdminChallengeDetail() {
             <div className="card-header"><span className="card-title">Problem Details</span></div>
             <div className="card-body">
               <div className="detail-row">
-                <span className="detail-label">Description</span>
+                <span className="detail-label">
+                  Description
+                  {challenge.original_language && challenge.original_language !== 'en' && (
+                    <span style={{ fontWeight: 400, color: 'var(--gray-500)', marginLeft: 6 }}>
+                      (Original — {challenge.original_language})
+                    </span>
+                  )}
+                </span>
                 <span className="detail-value" style={{ whiteSpace: 'pre-wrap' }}>{challenge.description}</span>
               </div>
+              {challenge.original_language && challenge.original_language !== 'en' && (
+                <div className="detail-row">
+                  <span className="detail-label">Normalized (English)</span>
+                  <span className="detail-value" style={{ whiteSpace: 'pre-wrap' }}>
+                    {challenge.normalized_description}
+                  </span>
+                </div>
+              )}
               <div className="detail-row">
                 <span className="detail-label">District</span>
                 <span className="detail-value">{challenge.district}</span>
