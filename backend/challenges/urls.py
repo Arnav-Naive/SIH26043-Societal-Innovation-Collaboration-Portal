@@ -3,6 +3,7 @@ from .views import (
     ChallengeSubmitView, CitizenChallengeListView, AdminChallengeListView,
     ChallengeDetailView, ChallengeReviewView, ChallengeRouteView,
     ChallengePriorityUpdateView, AllRolesChallengeListView,
+    ChallengeAIOverrideView, ChallengeAIReprocessView,
 )
 
 urlpatterns = [
@@ -14,4 +15,7 @@ urlpatterns = [
     path('<int:pk>/review/', ChallengeReviewView.as_view(), name='challenge-review'),
     path('<int:pk>/route/', ChallengeRouteView.as_view(), name='challenge-route'),
     path('<int:pk>/priority/', ChallengePriorityUpdateView.as_view(), name='challenge-priority'),
+    # AI Categorization & Prioritization Engine
+    path('<int:pk>/ai-override/', ChallengeAIOverrideView.as_view(), name='challenge-ai-override'),
+    path('<int:pk>/ai-reprocess/', ChallengeAIReprocessView.as_view(), name='challenge-ai-reprocess'),
 ]

@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from datetime import timedelta
+from decouple import config as env_config, Undefined
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -119,3 +120,22 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:5173',
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+# ─── AI Categorization & Prioritization Engine ───────────────────────────────
+# Set these in a .env file — never hardcode API keys.
+# Example .env:
+#   AI_PROVIDER=gemini
+#   GEMINI_API_KEY=your-api-key-here
+#   GEMINI_MODEL=gemini-1.5-flash
+#   AI_TIMEOUT_SECONDS=10
+
+try:
+    AI_PROVIDER = env_config('AI_PROVIDER', default='keyword')        # 'gemini' | 'keyword'
+    GEMINI_API_KEY = env_config('GEMINI_API_KEY', default='')
+    GEMINI_MODEL = env_config('GEMINI_MODEL', default='gemini-1.5-flash')
+    AI_TIMEOUT_SECONDS = int(env_config('AI_TIMEOUT_SECONDS', default=10))
+except Exception:
+    AI_PROVIDER = os.environ.get('AI_PROVIDER', 'keyword')
+    GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+    GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-1.5-flash')
+    AI_TIMEOUT_SECONDS = int(os.environ.get('AI_TIMEOUT_SECONDS', 10))

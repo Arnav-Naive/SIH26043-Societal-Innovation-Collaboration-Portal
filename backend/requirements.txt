@@ -6,3 +6,5 @@ Pillow==10.4.0
 python-decouple==3.8
 langdetect==1.0.9
 deep-translator==1.11.4
+# Optional: enable Gemini AI provider (set AI_PROVIDER=gemini in .env)
+google-generativeai>=0.7.0

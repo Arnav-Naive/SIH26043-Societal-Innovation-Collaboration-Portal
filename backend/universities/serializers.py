@@ -33,15 +33,15 @@ class UniversityMatchSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'district', 'expertise_areas', 'relevance_score', 'match_reason')
 
     def get_relevance_score(self, obj):
-        category = self.context.get('category', '')
-        if category in obj.expertise_areas:
+        category = self.context.get('category')
+        if category and obj.expertise_areas.filter(name=category.name).exists():
             return 95
         return 40
 
     def get_match_reason(self, obj):
-        category = self.context.get('category', '')
-        if category in obj.expertise_areas:
-            return f'Strong match — {category} listed in expertise areas.'
+        category = self.context.get('category')
+        if category and obj.expertise_areas.filter(name=category.name).exists():
+            return f'Strong match — {category.name} listed in expertise areas.'
         return 'Partial match — general research capacity.'
 
 
