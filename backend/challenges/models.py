@@ -38,7 +38,12 @@ class Challenge(models.Model):
 
     title = models.CharField(max_length=300)
     description = models.TextField()
-    
+
+    # Multilingual intake & normalization fields (NEW)
+    original_language = models.CharField(max_length=10, blank=True, default='en')
+    normalized_description = models.TextField(blank=True)
+    normalization_note = models.CharField(max_length=255, blank=True)
+
     # Updated to use Master Data
     district = models.ForeignKey(
         'master_data.District',
