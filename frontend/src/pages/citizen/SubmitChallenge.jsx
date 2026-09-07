@@ -1,21 +1,15 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import TopHeader from '../../components/common/TopHeader'
 import { submitChallenge } from '../../api/challenges'
+import { getMasterData } from '../../api/master'
 import StatusBadge from '../../components/common/StatusBadge'
-
-const DISTRICTS = [
-  'Ranchi', 'Dhanbad', 'Bokaro', 'Jamshedpur (East Singhbhum)',
-  'Seraikela-Kharsawan', 'West Singhbhum', 'Giridih', 'Hazaribagh',
-  'Chatra', 'Koderma', 'Lohardaga', 'Gumla', 'Simdega', 'Khunti',
-  'Ramgarh', 'Palamu', 'Latehar', 'Garhwa', 'Sahibganj', 'Pakur',
-  'Godda', 'Dumka', 'Deoghar', 'Jamtara', 'Other',
-]
 
 export default function SubmitChallenge() {
   const navigate = useNavigate()
   const fileInputRef = useRef()
 
+  const [districts, setDistricts] = useState([])
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -27,6 +21,12 @@ export default function SubmitChallenge() {
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(null)
+
+  useEffect(() => {
+    getMasterData('districts')
+      .then(({ data }) => setDistricts(Array.isArray(data) ? data : data.results || []))
+      .catch(() => setDistricts([]))
+  }, [])
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -205,7 +205,9 @@ export default function SubmitChallenge() {
                   required
                 >
                   <option value="">Select district</option>
-                  {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+                  {districts.map(d => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
                 </select>
                 {errors.district && <div className="form-error">{errors.district}</div>}
               </div>
