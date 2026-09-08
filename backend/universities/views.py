@@ -16,21 +16,30 @@ class UniversityListView(generics.ListAPIView):
 
 
 class UniversityRecommendView(APIView):
-    """Recommend universities based on challenge category."""
+    """Recommend universities for a challenge using the semantic
+    Problem-to-University Matching Engine (TF-IDF + cosine similarity
+    over normalized challenge text vs. declared expertise areas)."""
     permission_classes = [IsGovAdmin]
 
     def get(self, request, challenge_id):
         try:
-            challenge = Challenge.objects.get(pk=challenge_id)
+            challenge = Challenge.objects.select_related('category').get(pk=challenge_id)
         except Challenge.DoesNotExist:
             return Response({'detail': 'Challenge not found.'}, status=404)
 
-        universities = University.objects.all()
+        universities = University.objects.prefetch_related('expertise_areas').all()
+
+        from .matching import compute_university_matches
+        match_results = compute_university_matches(challenge, universities)
+        scores = {
+            r['university_id']: {'score': r['score'], 'reason': r['reason']}
+            for r in match_results
+        }
+
         serializer = UniversityMatchSerializer(
             universities, many=True,
-            context={'category': challenge.category, 'request': request}
+            context={'scores': scores, 'request': request}
         )
-        # Sort by relevance
         data = sorted(serializer.data, key=lambda u: u['relevance_score'], reverse=True)
         return Response(data)
 
