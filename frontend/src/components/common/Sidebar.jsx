@@ -12,8 +12,10 @@ const ROLE_LABEL = {
 
 const NAV_ITEMS = {
   citizen: [
+    { to: '/citizen/dashboard', label: 'Dashboard', icon: '◼' },
     { to: '/citizen/my-challenges', label: 'My Problems', icon: '📋' },
-    { to: '/citizen/submit-challenge', label: 'Submit Problem', icon: '✉' },
+    { to: '/citizen/submit-challenge', label: 'Report Problem', icon: '✉' },
+    { to: '/citizen/profile', label: 'My Profile', icon: '👤' },
   ],
   gov_admin: [
     { group: 'MAIN', items: [

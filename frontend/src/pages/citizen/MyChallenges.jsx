@@ -18,6 +18,7 @@ export default function MyChallenges() {
   const [challenges, setChallenges] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     getMyChallenges()
@@ -39,12 +40,13 @@ export default function MyChallenges() {
       <div className="page-content">
         <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h1 className="page-title">My Problems</h1>
+            <h1 className="page-title" style={{ fontSize: 'clamp(20px, 4vw, 28px)' }}>My Problems</h1>
             <p className="page-subtitle">Track the progress of problems you have submitted.</p>
           </div>
           <button
             className="btn btn-primary"
             onClick={() => navigate('/citizen/submit-challenge')}
+            style={{ whiteSpace: 'nowrap' }}
           >
             + Submit Problem
           </button>
@@ -65,12 +67,30 @@ export default function MyChallenges() {
           />
         ) : (
           <div>
-            {challenges.map((ch) => (
-              <div
-                key={ch.id}
-                className="challenge-card"
-                onClick={() => navigate(`/citizen/challenges/${ch.id}`)}
-                tabIndex={0}
+            <div style={{ marginBottom: 24 }}>
+              <input 
+                type="text" 
+                className="form-control" 
+                placeholder="Search by title, location or category..." 
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                style={{ maxWidth: 400 }}
+              />
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
+              {challenges
+                .filter(ch => 
+                  ch.title.toLowerCase().includes(search.toLowerCase()) || 
+                  (ch.district && ch.district.toLowerCase().includes(search.toLowerCase())) ||
+                  (ch.category && ch.category.toLowerCase().includes(search.toLowerCase()))
+                )
+                .map((ch) => (
+                <div
+                  key={ch.id}
+                  className="challenge-card"
+                  onClick={() => navigate(`/citizen/challenges/${ch.id}`)}
+                  tabIndex={0}
                 role="button"
                 onKeyDown={(e) => e.key === 'Enter' && navigate(`/citizen/challenges/${ch.id}`)}
                 aria-label={`View details for ${ch.title}`}
@@ -83,10 +103,11 @@ export default function MyChallenges() {
                 </div>
                 <div className="challenge-card-footer">
                   <StatusBadge value={ch.status} />
-                  <span>{formatDate(ch.created_at)}</span>
+                  <span style={{ fontSize: 13, color: 'var(--gray-500)', fontWeight: 500 }}>{formatDate(ch.created_at)}</span>
                 </div>
               </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>

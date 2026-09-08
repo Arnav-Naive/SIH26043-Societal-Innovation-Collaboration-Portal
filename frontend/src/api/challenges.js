@@ -23,6 +23,9 @@ export const routeChallenge = (id, university_id, note) =>
 export const updatePriority = (id, priority) =>
   axiosClient.patch(`/challenges/${id}/priority/`, { priority })
 
+export const submitCitizenFeedback = (id, action, comments) =>
+  axiosClient.post(`/challenges/${id}/feedback/`, { action, comments })
+
 // ─── AI Categorization & Prioritization Engine ───────────────────────────────
 
 export const acceptAIResult = (id) =>

@@ -14,10 +14,12 @@ function AppLayout() {
   // Auth pages don't get sidebar/layout
   if (!user) return <AppRoutes />
 
+  const isCitizen = user.role === 'citizen'
+
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="main-content">
+    <div className={`app-shell ${isCitizen ? 'citizen-shell' : ''}`}>
+      {!isCitizen && <Sidebar />}
+      <main className={`main-content ${isCitizen ? 'citizen-content' : ''}`}>
         <AppRoutes />
       </main>
       <MobileBottomNav />

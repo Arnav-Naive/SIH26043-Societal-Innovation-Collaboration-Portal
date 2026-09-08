@@ -269,6 +269,48 @@ class ChallengeDetailView(generics.RetrieveAPIView):
         return obj
 
 
+class ChallengeCitizenFeedbackView(APIView):
+    """Citizen provides feedback on a COMPLETED challenge."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            challenge = Challenge.objects.get(pk=pk, citizen=request.user)
+        except Challenge.DoesNotExist:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if challenge.status != 'COMPLETED':
+            return Response({'detail': 'Feedback can only be provided for COMPLETED challenges.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        action = request.data.get('action') # 'resolved' or 'not_resolved'
+        comments = request.data.get('comments', '')
+
+        if action == 'resolved':
+            challenge.routing_note = f"Citizen confirmed resolution. Comments: {comments}"
+            challenge.save()
+            ChallengeStatusHistory.objects.create(
+                challenge=challenge,
+                status='COMPLETED',
+                note=f"Citizen confirmed resolution. Comments: {comments}",
+                changed_by=request.user
+            )
+            return Response({'status': 'Feedback recorded as resolved.'})
+        elif action == 'not_resolved':
+            # Reopen challenge
+            challenge.status = 'IN_PROGRESS'
+            challenge.routing_note = f"Citizen reported issue not resolved. Comments: {comments}"
+            challenge.save()
+            ChallengeStatusHistory.objects.create(
+                challenge=challenge,
+                status='IN_PROGRESS',
+                note=f"Reopened by Citizen. Comments: {comments}",
+                changed_by=request.user
+            )
+            return Response({'status': 'Challenge reopened as IN_PROGRESS.'})
+        else:
+            return Response({'detail': 'Invalid action. Must be resolved or not_resolved.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class ChallengeReviewView(APIView):
     """Admin marks a challenge as UNDER_REVIEW."""
     permission_classes = [IsGovAdmin]

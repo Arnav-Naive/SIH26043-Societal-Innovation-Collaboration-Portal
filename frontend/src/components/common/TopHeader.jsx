@@ -67,7 +67,39 @@ export default function TopHeader({ title }) {
 
   return (
     <header className="top-header">
-      <div className="top-header-title">{title}</div>
+      <div className="top-header-left">
+        {(!user || user.role !== 'citizen') && (
+          <button 
+            className="mobile-header-hamburger btn-ghost" 
+            onClick={() => {
+              const sb = document.querySelector('.sidebar')
+              if (sb) sb.classList.toggle('open')
+            }}
+            style={{ padding: '8px', marginRight: '8px', border: 'none', background: 'transparent' }}
+            aria-label="Toggle navigation"
+          >
+            <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={() => navigate(user?.role === 'citizen' ? '/' : `/${user?.role}/dashboard`)}>
+          <div style={{ width: 32, height: 32, background: 'var(--color-primary)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 14 }}>SX</div>
+          <span className="top-header-title" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
+            <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-primary-dark)' }}>SAMAdhan</span>
+            {user?.role === 'citizen' && <span className="desktop-only" style={{ fontSize: 10, color: 'var(--gray-500)', fontWeight: 500 }}>People's Problems. Academic Solutions.</span>}
+          </span>
+        </div>
+      </div>
+
+      {user?.role === 'citizen' && (
+        <nav className="desktop-only" style={{ display: 'flex', gap: '24px', alignItems: 'center', margin: '0 auto' }}>
+          <Link to="/" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>Home</Link>
+          <Link to="/citizen/submit-challenge" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>Report a Problem</Link>
+          <Link to="/citizen/my-challenges" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>My Problems</Link>
+          <Link to="/citizen/my-challenges" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>Track Issue</Link>
+        </nav>
+      )}
 
       {user && (
         <div className="top-header-right" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -84,7 +116,7 @@ export default function TopHeader({ title }) {
                 style={{ width: '250px', borderRadius: '20px', padding: '6px 16px' }}
               />
               {showSearch && (
-                <div className="dropdown-menu" style={{ position: 'absolute', top: '100%', right: 0, width: '350px', background: '#fff', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 100, maxHeight: '400px', overflowY: 'auto', marginTop: '8px' }}>
+                <div className="dropdown-menu" style={{ position: 'absolute', top: '100%', right: 0, width: '350px', maxWidth: 'calc(100vw - 32px)', background: '#fff', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 100, maxHeight: '400px', overflowY: 'auto', marginTop: '8px' }}>
                   {isSearching ? (
                     <div style={{ padding: '12px', textAlign: 'center', color: '#888' }}>Searching...</div>
                   ) : searchResults.length > 0 ? (
@@ -117,7 +149,7 @@ export default function TopHeader({ title }) {
               )}
             </button>
             {showNotifs && (
-              <div className="dropdown-menu" style={{ position: 'absolute', top: '100%', right: 0, width: '300px', background: '#fff', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 100, maxHeight: '400px', overflowY: 'auto', marginTop: '8px' }}>
+              <div className="dropdown-menu" style={{ position: 'absolute', top: '100%', right: 0, width: '300px', maxWidth: 'calc(100vw - 32px)', background: '#fff', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 100, maxHeight: '400px', overflowY: 'auto', marginTop: '8px' }}>
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <strong>Notifications</strong>
                   {unreadCount > 0 && (

@@ -11,3 +11,5 @@ google-generativeai>=0.7.0
 # Semantic duplicate detection
 sentence-transformers>=2.2.0
 numpy>=1.24.0
+openpyxl>=3.1.2
+reportlab>=4.1.0

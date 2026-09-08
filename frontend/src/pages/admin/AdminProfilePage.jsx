@@ -65,14 +65,15 @@ export default function AdminProfilePage() {
         {error && <div className="alert alert-error">{error}</div>}
         {success && <div className="alert alert-success">{success}</div>}
         
-        <form onSubmit={handleSave} className="card p-6" style={{ maxWidth: '600px' }}>
-          <h3 className="mb-4 text-lg font-bold">Personal Information</h3>
+        <form onSubmit={handleSave} className="card" style={{ maxWidth: '600px', padding: '24px' }}>
+          <h3 style={{ marginBottom: 16, fontSize: 18, fontWeight: 700, color: 'var(--gray-900)' }}>Personal Information</h3>
           
           <div className="form-group mb-4">
             <label>Username</label>
             <input 
               type="text" 
-              className="form-control bg-gray-100"
+              className="form-control"
+              style={{ background: 'var(--gray-100)' }}
               value={profile.username}
               disabled
             />
@@ -82,13 +83,14 @@ export default function AdminProfilePage() {
             <label>Email Address</label>
             <input 
               type="email" 
-              className="form-control bg-gray-100"
+              className="form-control"
+              style={{ background: 'var(--gray-100)' }}
               value={profile.email}
               disabled
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid-2" style={{ marginBottom: 16 }}>
             <div className="form-group">
               <label>First Name</label>
               <input 
@@ -131,7 +133,7 @@ export default function AdminProfilePage() {
             />
           </div>
 
-          <h3 className="mb-4 text-lg font-bold border-t pt-6">Security</h3>
+          <h3 style={{ marginBottom: 16, marginTop: 24, paddingTop: 24, fontSize: 18, fontWeight: 700, borderTop: '1px solid var(--border-color)', color: 'var(--gray-900)' }}>Security</h3>
           <div className="form-group mb-6">
             <label>New Password (leave blank to keep current password)</label>
             <input 
@@ -143,7 +145,7 @@ export default function AdminProfilePage() {
             />
           </div>
 
-          <div className="flex justify-end">
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
             <button type="submit" className="btn btn-primary" disabled={saving}>
               {saving ? 'Saving...' : 'Update Profile'}
             </button>

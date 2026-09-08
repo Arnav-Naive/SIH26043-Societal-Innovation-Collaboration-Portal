@@ -5,6 +5,7 @@ from .views import (
     ChallengeDetailView, ChallengeReviewView, ChallengeRouteView,
     ChallengePriorityUpdateView, AllRolesChallengeListView,
     ChallengeAIOverrideView, ChallengeAIReprocessView,
+    ChallengeCitizenFeedbackView,
     ProblemTwinViewSet
 )
 
@@ -17,6 +18,7 @@ urlpatterns = [
     path('all/', AdminChallengeListView.as_view(), name='challenge-all'),
     path('assigned/', AllRolesChallengeListView.as_view(), name='challenge-assigned'),
     path('<int:pk>/', ChallengeDetailView.as_view(), name='challenge-detail'),
+    path('<int:pk>/feedback/', ChallengeCitizenFeedbackView.as_view(), name='challenge-feedback'),
     path('<int:pk>/review/', ChallengeReviewView.as_view(), name='challenge-review'),
     path('<int:pk>/route/', ChallengeRouteView.as_view(), name='challenge-route'),
     path('<int:pk>/priority/', ChallengePriorityUpdateView.as_view(), name='challenge-priority'),

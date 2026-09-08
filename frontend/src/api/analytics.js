@@ -3,6 +3,9 @@ import axiosClient from './axiosClient'
 export const getSummary = () =>
   axiosClient.get('/analytics/summary/')
 
+export const getCitizenSummary = () =>
+  axiosClient.get('/analytics/summary/citizen/')
+
 export const getCategoryDistribution = () =>
   axiosClient.get('/analytics/categories/')
 

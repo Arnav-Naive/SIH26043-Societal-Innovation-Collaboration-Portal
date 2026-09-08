@@ -3,6 +3,25 @@ from .models import Challenge, ChallengeMedia, ChallengeStatusHistory, Duplicate
 from accounts.serializers import UserSerializer
 
 
+class ProjectTeamSerializer(serializers.Serializer):
+    """Lightweight read-only team info for citizen-facing challenge detail."""
+    id = serializers.IntegerField()
+    stage = serializers.CharField()
+    project_description = serializers.CharField()
+    students = serializers.JSONField()
+    faculty_mentor = serializers.SerializerMethodField()
+
+    def get_faculty_mentor(self, obj):
+        if obj.faculty_mentor:
+            return {
+                'id': obj.faculty_mentor.id,
+                'first_name': obj.faculty_mentor.first_name,
+                'last_name': obj.faculty_mentor.last_name,
+                'email': obj.faculty_mentor.email,
+            }
+        return None
+
+
 class ChallengeMediaSerializer(serializers.ModelSerializer):
     file_url = serializers.SerializerMethodField()
 
@@ -75,6 +94,8 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
     # Nested priority detail block
     priority_detail = serializers.SerializerMethodField()
 
+    project_team = serializers.SerializerMethodField()
+
     class Meta:
         model = Challenge
         fields = (
@@ -94,6 +115,9 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
             'severity', 'frequency', 'affected_population', 'urgency',
             'manual_priority',
             'priority_detail',
+            'problem_twin_context',
+            # Team / Innovation Journey
+            'project_team',
             'created_at', 'updated_at',
         )
         read_only_fields = (
@@ -125,6 +149,26 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
 
     def get_manual_category_name(self, obj):
         return obj.manual_category.name if obj.manual_category else None
+
+    def get_project_team(self, obj):
+        """Return project team info so citizens can see assigned team and mentor."""
+        try:
+            team = obj.project_team  # OneToOneField reverse accessor
+            mentor = team.faculty_mentor
+            return {
+                'id': team.id,
+                'stage': team.stage,
+                'project_description': team.project_description,
+                'students': team.students,
+                'faculty_mentor': {
+                    'id': mentor.id,
+                    'first_name': mentor.first_name,
+                    'last_name': mentor.last_name,
+                    'email': mentor.email,
+                } if mentor else None,
+            }
+        except Exception:
+            return None
 
     def get_ai_classification(self, obj):
         """Structured AI classification block for frontend."""

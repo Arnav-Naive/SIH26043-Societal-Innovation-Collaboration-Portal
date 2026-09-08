@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 
 from accounts.permissions import IsHEISPOC, IsFacultyMentor, IsGovAdmin, IsHEISPOCOrFaculty
 from universities.models import ProjectTeam
-from .models import Milestone, MilestoneEvidence
-from .serializers import MilestoneSerializer, MilestoneCreateSerializer, MilestoneEvidenceSerializer
+from .models import Milestone, MilestoneEvidence, ProjectImpact
+from .serializers import MilestoneSerializer, MilestoneCreateSerializer, MilestoneEvidenceSerializer, ProjectImpactSerializer
 
 
 class TeamMilestonesView(APIView):
@@ -110,3 +110,66 @@ class MilestoneApproveView(APIView):
                 )
 
         return Response(MilestoneSerializer(milestone, context={'request': request}).data)
+
+class ProjectImpactView(APIView):
+    """Retrieve or record post-deployment impact for a project team."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, team_id):
+        try:
+            team = ProjectTeam.objects.get(pk=team_id)
+        except ProjectTeam.DoesNotExist:
+            return Response({'detail': 'Team not found.'}, status=404)
+
+        try:
+            impact = team.impact_record
+            serializer = ProjectImpactSerializer(impact, context={'request': request})
+            return Response(serializer.data)
+        except ProjectImpact.DoesNotExist:
+            return Response({'detail': 'No impact recorded yet.'}, status=404)
+
+    def post(self, request, team_id):
+        if not (request.user.role in ('hei_spoc', 'gov_admin', 'faculty_mentor')):
+            return Response({'detail': 'Permission denied.'}, status=403)
+
+        try:
+            team = ProjectTeam.objects.get(pk=team_id)
+        except ProjectTeam.DoesNotExist:
+            return Response({'detail': 'Team not found.'}, status=404)
+
+        impact, created = ProjectImpact.objects.get_or_create(project_team=team)
+        
+        # Update fields from request data
+        data = request.data
+        if 'beneficiaries_count' in data:
+            impact.beneficiaries_count = data['beneficiaries_count']
+        if 'cost_incurred' in data:
+            impact.cost_incurred = data['cost_incurred']
+        if 'adoption_rate' in data:
+            impact.adoption_rate = data['adoption_rate']
+        if 'before_metrics' in data:
+            impact.before_metrics = data['before_metrics']
+        if 'after_metrics' in data:
+            impact.after_metrics = data['after_metrics']
+        
+        if 'outcome_evidence' in request.FILES:
+            impact.outcome_evidence = request.FILES['outcome_evidence']
+
+        impact.recorded_by = request.user
+        impact.save()
+
+        # Mark challenge status to resolved/impact if not already
+        challenge = team.challenge
+        from challenges.models import Challenge, ChallengeStatusHistory
+        if challenge.status != Challenge.STATUS_COMPLETED:
+            challenge.status = Challenge.STATUS_COMPLETED
+            challenge.save()
+            ChallengeStatusHistory.objects.create(
+                challenge=challenge,
+                status=Challenge.STATUS_COMPLETED,
+                changed_by=request.user,
+                note='Impact recorded. Project marked as successfully completed.',
+            )
+
+        serializer = ProjectImpactSerializer(impact, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)

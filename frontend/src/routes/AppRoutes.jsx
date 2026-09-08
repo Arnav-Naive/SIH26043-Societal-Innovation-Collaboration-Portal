@@ -8,6 +8,7 @@ import LoadingPage from '../components/common/LoadingPage'
 const Login = lazy(() => import('../pages/auth/Login'))
 const Register = lazy(() => import('../pages/auth/Register'))
 
+const CitizenDashboard = lazy(() => import('../pages/citizen/Dashboard'))
 const MyChallenges = lazy(() => import('../pages/citizen/MyChallenges'))
 const SubmitChallenge = lazy(() => import('../pages/citizen/SubmitChallenge'))
 const CitizenChallengeDetail = lazy(() => import('../pages/citizen/ChallengeDetail'))
@@ -33,6 +34,8 @@ const FacultyTeamDetail = lazy(() => import('../pages/faculty/TeamDetail'))
 const BrowseProjects = lazy(() => import('../pages/industry/BrowseProjects'))
 const MyPartnerships = lazy(() => import('../pages/industry/MyPartnerships'))
 
+const LandingPage = lazy(() => import('../pages/public/LandingPage'))
+
 function RootRedirect() {
   const { user } = useAuth()
   if (!user) return <Navigate to="/login" replace />
@@ -43,14 +46,17 @@ export default function AppRoutes() {
   return (
     <Suspense fallback={<LoadingPage />}>
       <Routes>
-        {/* Root redirect */}
-        <Route path="/" element={<RootRedirect />} />
+        {/* Public Landing */}
+        <Route path="/" element={<LandingPage />} />
 
         {/* Auth (public) */}
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
         {/* Citizen */}
+        <Route path="/citizen/dashboard" element={
+          <ProtectedRoute allowedRoles={['citizen']}><CitizenDashboard /></ProtectedRoute>
+        } />
         <Route path="/citizen/my-challenges" element={
           <ProtectedRoute allowedRoles={['citizen']}><MyChallenges /></ProtectedRoute>
         } />
@@ -59,6 +65,9 @@ export default function AppRoutes() {
         } />
         <Route path="/citizen/challenges/:id" element={
           <ProtectedRoute allowedRoles={['citizen']}><CitizenChallengeDetail /></ProtectedRoute>
+        } />
+        <Route path="/citizen/profile" element={
+          <ProtectedRoute allowedRoles={['citizen']}><AdminProfilePage /></ProtectedRoute>
         } />
 
         {/* Admin */}

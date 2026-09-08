@@ -36,7 +36,7 @@ export function PublicRoute({ children }) {
 
 export function getRoleHome(role) {
   const map = {
-    citizen: '/citizen/my-challenges',
+    citizen: '/citizen/dashboard',
     gov_admin: '/admin/dashboard',
     hei_spoc: '/hei/assigned-challenges',
     faculty_mentor: '/faculty/my-teams',

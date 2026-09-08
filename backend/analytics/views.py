@@ -36,6 +36,28 @@ class AnalyticsSummaryView(APIView):
         })
 
 
+class CitizenAnalyticsSummaryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        qs = Challenge.objects.filter(citizen=request.user)
+        total = qs.count()
+        under_review = qs.filter(status='UNDER_REVIEW').count()
+        in_progress = qs.filter(status='IN_PROGRESS').count()
+        completed = qs.filter(status='COMPLETED').count()
+        routed = qs.filter(status='ROUTED').count()
+        submitted = qs.filter(status='SUBMITTED').count()
+
+        return Response({
+            'total_challenges': total,
+            'submitted': submitted,
+            'under_review': under_review,
+            'routed': routed,
+            'in_progress': in_progress,
+            'completed': completed,
+        })
+
+
 class CategoryDistributionView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -328,48 +350,96 @@ class GlobalSearchView(APIView):
         return Response(results)
 import csv
 from django.http import HttpResponse
+import openpyxl
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
 
 class ExportReportView(APIView):
     permission_classes = [IsGovAdmin]
 
     def get(self, request):
         report_type = request.query_params.get('type', 'challenges')
+        export_format = request.query_params.get('format', 'csv').lower()
         
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="{report_type}_report.csv"'
-        
-        writer = csv.writer(response)
-        
+        # Build Data Headers and Rows
+        headers = []
+        rows = []
         if report_type == 'challenges':
-            writer.writerow(['ID', 'Reference ID', 'Title', 'Category', 'District', 'Status', 'Priority Level'])
+            headers = ['ID', 'Reference ID', 'Title', 'Category', 'District', 'Status', 'Priority Level']
             for c in Challenge.objects.all().select_related('category', 'district'):
-                writer.writerow([
-                    c.id, c.reference_id, c.title, 
+                rows.append([
+                    str(c.id), c.reference_id, c.title[:50], 
                     c.category.name if c.category else 'N/A',
                     c.district.name if c.district else 'N/A',
                     c.status, c.priority_level
                 ])
-                
         elif report_type == 'users':
-            writer.writerow(['ID', 'Username', 'Email', 'Role', 'Status', 'Joined Date'])
+            headers = ['ID', 'Username', 'Email', 'Role', 'Status', 'Joined Date']
             from accounts.models import User
             for u in User.objects.all():
-                writer.writerow([
-                    u.id, u.username, u.email, u.get_role_display(), 
+                rows.append([
+                    str(u.id), u.username, u.email, u.get_role_display(), 
                     'Active' if u.is_active else 'Inactive', 
                     u.date_joined.strftime("%Y-%m-%d")
                 ])
-                
         elif report_type == 'universities':
-            writer.writerow(['ID', 'Name', 'State', 'District', 'Status'])
+            headers = ['ID', 'Name', 'State', 'District', 'Status']
             from universities.models import University
             for u in University.objects.all():
-                writer.writerow([
-                    u.id, u.name, u.state, u.district.name if getattr(u, 'district', None) else 'N/A',
+                rows.append([
+                    str(u.id), u.name, u.state, u.district.name if getattr(u, 'district', None) else 'N/A',
                     'Active' if u.is_active else 'Inactive'
                 ])
-                
         else:
-            writer.writerow(['Invalid Report Type'])
+            headers = ['Error']
+            rows = [['Invalid Report Type']]
+
+        # Output to selected format
+        if export_format == 'excel':
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = f'attachment; filename="{report_type}_report.xlsx"'
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = f"{report_type.capitalize()} Report"
+            ws.append(headers)
+            for row in rows:
+                ws.append(row)
+            wb.save(response)
+            return response
             
-        return response
+        elif export_format == 'pdf':
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{report_type}_report.pdf"'
+            doc = SimpleDocTemplate(response, pagesize=letter)
+            elements = []
+            
+            # Simple PDF table
+            data = [headers] + rows
+            # limit rows to 100 for PDF to avoid huge file in memory
+            data = data[:101] 
+            
+            t = Table(data)
+            t.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#1E3A8A')),
+                ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+                ('BOTTOMPADDING', (0,0), (-1,0), 12),
+                ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+                ('GRID', (0,0), (-1,-1), 1, colors.black),
+                ('FONTSIZE', (0,0), (-1,-1), 8),
+            ]))
+            elements.append(t)
+            doc.build(elements)
+            return response
+
+        else:
+            # Default CSV
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = f'attachment; filename="{report_type}_report.csv"'
+            writer = csv.writer(response)
+            writer.writerow(headers)
+            writer.writerows(rows)
+            return response
