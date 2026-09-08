@@ -24,7 +24,14 @@ class UniversitySerializer(serializers.ModelSerializer):
 
 
 class UniversityMatchSerializer(serializers.ModelSerializer):
-    """Includes relevance score for routing recommendations."""
+    """Includes relevance score for routing recommendations.
+
+    Expects context={'scores': {university_id: {'score': int, 'reason': str}}}
+    as produced by universities.matching.compute_university_matches().
+    Falls back to a flat baseline if no score is present for a given
+    university (keeps this serializer safe to use without the matching
+    engine too).
+    """
     relevance_score = serializers.SerializerMethodField()
     match_reason = serializers.SerializerMethodField()
 
@@ -32,17 +39,15 @@ class UniversityMatchSerializer(serializers.ModelSerializer):
         model = University
         fields = ('id', 'name', 'district', 'expertise_areas', 'relevance_score', 'match_reason')
 
+    def _match_info(self, obj):
+        scores = self.context.get('scores') or {}
+        return scores.get(obj.id, {'score': 40, 'reason': 'Baseline — general research capacity.'})
+
     def get_relevance_score(self, obj):
-        category = self.context.get('category')
-        if category and obj.expertise_areas.filter(name=category.name).exists():
-            return 95
-        return 40
+        return self._match_info(obj)['score']
 
     def get_match_reason(self, obj):
-        category = self.context.get('category')
-        if category and obj.expertise_areas.filter(name=category.name).exists():
-            return f'Strong match — {category.name} listed in expertise areas.'
-        return 'Partial match — general research capacity.'
+        return self._match_info(obj)['reason']
 
 
 class ProjectTeamSerializer(serializers.ModelSerializer):
