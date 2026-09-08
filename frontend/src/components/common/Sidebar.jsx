@@ -18,8 +18,10 @@ const NAV_ITEMS = {
   gov_admin: [
     { group: 'MAIN', items: [
       { to: '/admin/dashboard', label: 'Dashboard', icon: '◼' },
+      { to: '/admin/reports', label: 'Reports & Exports', icon: '📊' },
     ]},
     { group: 'ECOSYSTEM', items: [
+      { to: '/admin/problem-twins', label: 'Problem Twins', icon: '🧬' },
       { to: '/admin/challenges', label: 'Challenges', icon: '📁' },
       { to: '/admin/duplicate-review', label: 'Duplicate Review', icon: '🔀' },
       { to: '/admin/universities', label: 'Universities', icon: '🎓' },
@@ -30,6 +32,7 @@ const NAV_ITEMS = {
     ]},
     { group: 'SYSTEM', items: [
       { to: '/admin/master-data', label: 'Master Data', icon: '⚙️' },
+      { to: '/admin/ai-config', label: 'AI Configuration', icon: '🧠' },
       { to: '/admin/audit-logs', label: 'Audit Logs', icon: '📜' },
     ]},
   ],

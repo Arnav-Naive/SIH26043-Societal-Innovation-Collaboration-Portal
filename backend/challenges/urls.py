@@ -1,10 +1,15 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from .views import (
     ChallengeSubmitView, CitizenChallengeListView, AdminChallengeListView,
     ChallengeDetailView, ChallengeReviewView, ChallengeRouteView,
     ChallengePriorityUpdateView, AllRolesChallengeListView,
     ChallengeAIOverrideView, ChallengeAIReprocessView,
+    ProblemTwinViewSet
 )
+
+router = DefaultRouter()
+router.register(r'twins', ProblemTwinViewSet, basename='problem-twins')
 
 urlpatterns = [
     path('submit/', ChallengeSubmitView.as_view(), name='challenge-submit'),
@@ -18,4 +23,5 @@ urlpatterns = [
     # AI Categorization & Prioritization Engine
     path('<int:pk>/ai-override/', ChallengeAIOverrideView.as_view(), name='challenge-ai-override'),
     path('<int:pk>/ai-reprocess/', ChallengeAIReprocessView.as_view(), name='challenge-ai-reprocess'),
+    path('', include(router.urls)),
 ]

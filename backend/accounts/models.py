@@ -47,3 +47,18 @@ class User(AbstractUser):
     @property
     def is_gov_admin(self):
         return self.role == self.ROLE_ADMIN
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    link = models.CharField(max_length=255, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'accounts_notification'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user.username} - {self.title}'

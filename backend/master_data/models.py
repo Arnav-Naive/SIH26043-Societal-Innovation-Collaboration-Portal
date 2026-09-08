@@ -50,5 +50,28 @@ class AuditLog(models.Model):
         ordering = ['-timestamp']
 
     def __str__(self):
-        return f"{self.user} - {self.action} on {self.entity_type} {self.entity_id}"
+        return f"{self.user} - {self.action} on {self.entity_type} {self.entity_id} "
 
+class AIConfiguration(models.Model):
+    category_confidence_threshold = models.FloatField(default=0.70)
+    duplicate_similarity_threshold = models.FloatField(default=0.85)
+    
+    weight_severity = models.FloatField(default=0.30)
+    weight_frequency = models.FloatField(default=0.20)
+    weight_validation = models.FloatField(default=0.20)
+    weight_population = models.FloatField(default=0.15)
+    weight_urgency = models.FloatField(default=0.15)
+    
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'AI Configuration'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj

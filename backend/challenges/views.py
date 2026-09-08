@@ -115,6 +115,10 @@ def run_ai_pipeline(challenge: Challenge) -> None:
             challenge.priority_score,
         )
 
+        # ── 3. Problem Twin Detection ──
+        from .problem_twin_detection import detect_problem_twin
+        detect_problem_twin(challenge)
+
     except Exception as exc:
         logger.error("AI pipeline failed for challenge %s: %s", challenge.pk, exc, exc_info=True)
         # Never let AI failure affect the submission response
@@ -564,6 +568,60 @@ class DuplicateFlagReviewView(APIView):
         flag.status = decision
         flag.reviewed_by = request.user
         flag.reviewed_at = timezone.now()
-        flag.save(update_fields=['status', 'reviewed_by', 'reviewed_at'])
-
         return Response(DuplicateFlagSerializer(flag).data)
+
+
+# ─── NEW: Problem Twin Views ──────────────────────────────────────────────────
+
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from .models import ProblemTwin
+from .serializers import ProblemTwinSerializer
+
+class ProblemTwinViewSet(viewsets.ModelViewSet):
+    """
+    API for managing Problem Twins.
+    Gov admins have full access.
+    """
+    permission_classes = [IsGovAdmin]
+    serializer_class = ProblemTwinSerializer
+    queryset = ProblemTwin.objects.all().select_related('category', 'district').prefetch_related('linked_challenges')
+
+    @action(detail=True, methods=['post'])
+    def accept_report(self, request, pk=None):
+        twin = self.get_object()
+        report_id = request.data.get('report_id')
+        challenge = get_object_or_404(Challenge, pk=report_id, problem_twin=twin)
+        
+        challenge.twin_association_status = Challenge.TWIN_STATUS_ACCEPTED
+        challenge.save(update_fields=['twin_association_status'])
+        
+        from master_data.utils import log_audit
+        log_audit(
+            user=request.user,
+            action='Accepted Twin Association',
+            entity_type='Challenge',
+            entity_id=challenge.reference_id,
+            new_value=f'Twin: {twin.reference_id}'
+        )
+        return Response(self.get_serializer(twin).data)
+
+    @action(detail=True, methods=['post'])
+    def reject_report(self, request, pk=None):
+        twin = self.get_object()
+        report_id = request.data.get('report_id')
+        challenge = get_object_or_404(Challenge, pk=report_id, problem_twin=twin)
+        
+        challenge.twin_association_status = Challenge.TWIN_STATUS_REJECTED
+        challenge.problem_twin = None
+        challenge.save(update_fields=['twin_association_status', 'problem_twin'])
+        
+        from master_data.utils import log_audit
+        log_audit(
+            user=request.user,
+            action='Rejected Twin Association',
+            entity_type='Challenge',
+            entity_id=challenge.reference_id,
+            new_value='Removed from Twin'
+        )
+        return Response(self.get_serializer(twin).data)

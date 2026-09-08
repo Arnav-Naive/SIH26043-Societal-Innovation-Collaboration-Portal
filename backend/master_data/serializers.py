@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import District, Category, ExpertiseArea, AuditLog
+from .models import District, Category, ExpertiseArea, AuditLog, AIConfiguration
 
 class DistrictSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,4 +21,9 @@ class AuditLogSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = AuditLog
+        fields = '__all__'
+
+class AIConfigurationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AIConfiguration
         fields = '__all__'

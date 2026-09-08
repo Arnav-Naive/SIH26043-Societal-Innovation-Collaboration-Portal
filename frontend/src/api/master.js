@@ -13,3 +13,6 @@ export const toggleMasterDataActive = (entity, id) => {
 export const getAdminEntities = (entityType) => {
     return axiosClient.get(`/${entityType}/`)
 }
+
+export const getAIConfig = () => axiosClient.get('/master/ai-config/')
+export const updateAIConfig = (data) => axiosClient.put('/master/ai-config/', data)

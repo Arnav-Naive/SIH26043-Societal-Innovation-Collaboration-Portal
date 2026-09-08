@@ -270,6 +270,32 @@ export default function AdminChallengeDetail() {
         </div>
 
         <div className="grid-2">
+          {/* Problem Twin Context */}
+          {challenge.problem_twin_context && (
+            <div className="card" style={{ gridColumn: '1 / -1', background: '#f8fafc', borderLeft: '4px solid #3b82f6' }}>
+              <div className="card-body" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 16, color: '#1e293b' }}>
+                    🧬 Part of Problem Twin: <strong>{challenge.problem_twin_context.title}</strong>
+                  </h3>
+                  <div style={{ display: 'flex', gap: 12, marginTop: 8, fontSize: 13, color: '#64748b' }}>
+                    <span>Twin ID: {challenge.problem_twin_context.reference_id}</span>
+                    <span>Status: {challenge.problem_twin_context.association_status}</span>
+                    <span style={{ color: challenge.problem_twin_context.risk_level === 'ESCALATED' ? '#ef4444' : 'inherit' }}>
+                      Risk: {challenge.problem_twin_context.risk_level}
+                    </span>
+                  </div>
+                </div>
+                <button 
+                  className="btn btn-outline"
+                  onClick={() => navigate(`/admin/problem-twins/${challenge.problem_twin_context.id}`)}
+                >
+                  View Twin
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Problem Details */}
           <div className="card">
             <div className="card-header"><span className="card-title">Problem Details</span></div>

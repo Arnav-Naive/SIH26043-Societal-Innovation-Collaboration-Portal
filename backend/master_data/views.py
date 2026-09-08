@@ -78,3 +78,31 @@ class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = AuditLog.objects.all()
     serializer_class = AuditLogSerializer
     permission_classes = [IsGovAdmin]
+
+from rest_framework.views import APIView
+from .models import AIConfiguration
+from .serializers import AIConfigurationSerializer
+
+class AIConfigurationView(APIView):
+    permission_classes = [IsGovAdmin]
+
+    def get(self, request):
+        config = AIConfiguration.load()
+        return Response(AIConfigurationSerializer(config).data)
+
+    def put(self, request):
+        config = AIConfiguration.load()
+        serializer = AIConfigurationSerializer(config, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            
+            from .utils import log_audit
+            log_audit(
+                user=request.user,
+                action='Updated AI Configuration',
+                entity_type='AIConfiguration',
+                entity_id='1',
+                new_value=str(serializer.data)
+            )
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)

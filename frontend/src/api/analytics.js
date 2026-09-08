@@ -11,3 +11,5 @@ export const getDistrictDistribution = () =>
 
 export const getPipelineAnalytics = () =>
   axiosClient.get('/analytics/pipeline/')
+
+export const globalSearch = (query) => axiosClient.get(`/analytics/search/?q=${encodeURIComponent(query)}`)

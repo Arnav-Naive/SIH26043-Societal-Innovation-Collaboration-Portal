@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Challenge, ChallengeMedia, ChallengeStatusHistory, DuplicateFlag
+from .models import Challenge, ChallengeMedia, ChallengeStatusHistory, DuplicateFlag, ProblemTwin
 from accounts.serializers import UserSerializer
 
 
@@ -101,7 +101,21 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
             'ai_category_name', 'ai_confidence', 'ai_classification_reason',
             'classification_source', 'ai_processed_at',
             'priority_score', 'priority_breakdown', 'priority_reason',
+            'problem_twin_context'
         )
+
+    problem_twin_context = serializers.SerializerMethodField()
+
+    def get_problem_twin_context(self, obj):
+        if obj.problem_twin:
+            return {
+                "id": obj.problem_twin.id,
+                "reference_id": obj.problem_twin.reference_id,
+                "title": obj.problem_twin.title,
+                "risk_level": obj.problem_twin.risk_level,
+                "association_status": obj.twin_association_status
+            }
+        return None
 
     def get_assigned_university_name(self, obj):
         return obj.assigned_university.name if obj.assigned_university else None
@@ -190,3 +204,18 @@ class DuplicateFlagSerializer(serializers.ModelSerializer):
         if obj.reviewed_by:
             return obj.reviewed_by.get_full_name() or obj.reviewed_by.username
         return None
+
+
+class ProblemTwinSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    district_name = serializers.CharField(source='district.name', read_only=True)
+    linked_challenges = ChallengeListSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = ProblemTwin
+        fields = (
+            'id', 'reference_id', 'title', 'category', 'category_name', 
+            'district', 'district_name', 'status', 'risk_level', 
+            'ai_confidence', 'ai_reasoning', 'first_reported', 'last_reported', 
+            'created_at', 'updated_at', 'linked_challenges'
+        )

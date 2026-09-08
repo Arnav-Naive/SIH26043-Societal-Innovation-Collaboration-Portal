@@ -176,6 +176,27 @@ class Challenge(models.Model):
         help_text="Sentence-transformer embedding vector (list of floats)"
     )
 
+    # ── Problem Twin ──
+    problem_twin = models.ForeignKey(
+        'ProblemTwin',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='linked_challenges',
+        help_text="The underlying real-world civic problem this report belongs to."
+    )
+    TWIN_STATUS_PENDING = 'PENDING'
+    TWIN_STATUS_ACCEPTED = 'ACCEPTED'
+    TWIN_STATUS_REJECTED = 'REJECTED'
+    TWIN_STATUS_CHOICES = [
+        (TWIN_STATUS_PENDING, 'Pending Review'),
+        (TWIN_STATUS_ACCEPTED, 'Accepted'),
+        (TWIN_STATUS_REJECTED, 'Rejected'),
+    ]
+    twin_association_status = models.CharField(
+        max_length=20, choices=TWIN_STATUS_CHOICES, default=TWIN_STATUS_PENDING,
+        help_text="Status of the AI-suggested problem twin association."
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -310,3 +331,73 @@ class DuplicateFlag(models.Model):
             f'DuplicateFlag: {self.challenge_a.reference_id} ↔ '
             f'{self.challenge_b.reference_id} ({self.similarity_score:.0%})'
         )
+
+
+class ProblemTwin(models.Model):
+    """
+    Problem Twin - AI-Based Civic Problem Intelligence layer.
+    Groups similar citizen challenges into one underlying real-world problem.
+    """
+    STATUS_NEW = 'NEW'
+    STATUS_IN_PROGRESS = 'IN_PROGRESS'
+    STATUS_RESOLVED = 'RESOLVED'
+    STATUS_CLOSED = 'CLOSED'
+
+    STATUS_CHOICES = [
+        (STATUS_NEW, 'New Candidate'),
+        (STATUS_IN_PROGRESS, 'In Progress'),
+        (STATUS_RESOLVED, 'Resolved'),
+        (STATUS_CLOSED, 'Closed'),
+    ]
+
+    RISK_LOW = 'LOW'
+    RISK_MEDIUM = 'MEDIUM'
+    RISK_HIGH = 'HIGH'
+    RISK_ESCALATED = 'ESCALATED'
+
+    RISK_CHOICES = [
+        (RISK_LOW, 'Low Risk'),
+        (RISK_MEDIUM, 'Medium Risk'),
+        (RISK_HIGH, 'High Risk'),
+        (RISK_ESCALATED, 'Escalated'),
+    ]
+
+    reference_id = models.CharField(max_length=20, unique=True, blank=True)
+    title = models.CharField(max_length=300, help_text="AI-generated common problem title")
+    
+    category = models.ForeignKey(
+        'master_data.Category',
+        on_delete=models.RESTRICT,
+        related_name='problem_twins'
+    )
+    district = models.ForeignKey(
+        'master_data.District',
+        on_delete=models.RESTRICT,
+        related_name='problem_twins'
+    )
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_NEW)
+    risk_level = models.CharField(max_length=20, choices=RISK_CHOICES, default=RISK_MEDIUM)
+    
+    ai_confidence = models.FloatField(default=0.0, help_text="0.0 to 1.0 confidence score")
+    ai_reasoning = models.TextField(blank=True, help_text="Generated reasoning explaining why these challenges form this Twin")
+    
+    first_reported = models.DateTimeField(null=True, blank=True)
+    last_reported = models.DateTimeField(null=True, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f'{self.reference_id} — {self.title[:60]}'
+
+    def save(self, *args, **kwargs):
+        if not self.reference_id:
+            super().save(*args, **kwargs)
+            self.reference_id = f'TWIN-{self.pk:05d}'
+            ProblemTwin.objects.filter(pk=self.pk).update(reference_id=self.reference_id)
+        else:
+            super().save(*args, **kwargs)

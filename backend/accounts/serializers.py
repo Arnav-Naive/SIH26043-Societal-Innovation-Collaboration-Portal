@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from .models import User
+from .models import User, Notification
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -32,3 +32,9 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email', 'first_name', 'last_name',
                   'role', 'phone', 'district', 'organization')
         read_only_fields = ('id',)
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ('id', 'title', 'message', 'link', 'is_read', 'created_at')
+        read_only_fields = ('id', 'created_at')
