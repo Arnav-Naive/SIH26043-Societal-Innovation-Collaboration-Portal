@@ -1,14 +1,17 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import LoadingPage from '../components/common/LoadingPage'
 
 // Protect routes by role
 export function ProtectedRoute({ children, allowedRoles }) {
   const { user, loading } = useAuth()
+  const location = useLocation()
 
   if (loading) return <LoadingPage />
 
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) {
+    return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />
+  }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return (
@@ -29,8 +32,14 @@ export function ProtectedRoute({ children, allowedRoles }) {
 // Redirect authenticated users away from login/register
 export function PublicRoute({ children }) {
   const { user, loading } = useAuth()
+  const location = useLocation()
+
   if (loading) return <LoadingPage />
-  if (user) return <Navigate to={getRoleHome(user.role)} replace />
+  if (user) {
+    const searchParams = new URLSearchParams(location.search)
+    const nextUrl = searchParams.get('next')
+    return <Navigate to={nextUrl || getRoleHome(user.role)} replace />
+  }
   return children
 }
 

@@ -1,15 +1,14 @@
 from pathlib import Path
 import os
 from datetime import timedelta
-from decouple import config as env_config, Undefined
+from decouple import config, Csv
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'samadhanx-dev-secret-key-change-in-production-2026'
-
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
+SECRET_KEY = config('SECRET_KEY', default='samadhanx-dev-secret-key-change-in-production-2026')
+DEBUG = config('DEBUG', default=True, cast=bool)
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*', cast=Csv())
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -65,10 +64,11 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': config(
+        'DATABASE_URL',
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        cast=dj_database_url.parse
+    )
 }
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -115,10 +115,7 @@ SIMPLE_JWT = {
 }
 
 # CORS
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-]
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='http://localhost:5173,http://127.0.0.1:5173', cast=Csv())
 CORS_ALLOW_CREDENTIALS = True
 
 # ─── AI Categorization & Prioritization Engine ───────────────────────────────
@@ -129,16 +126,10 @@ CORS_ALLOW_CREDENTIALS = True
 #   GEMINI_MODEL=gemini-1.5-flash
 #   AI_TIMEOUT_SECONDS=10
 
-try:
-    AI_PROVIDER = env_config('AI_PROVIDER', default='keyword')        # 'gemini' | 'keyword'
-    GEMINI_API_KEY = env_config('GEMINI_API_KEY', default='')
-    GEMINI_MODEL = env_config('GEMINI_MODEL', default='gemini-1.5-flash')
-    AI_TIMEOUT_SECONDS = int(env_config('AI_TIMEOUT_SECONDS', default=10))
-except Exception:
-    AI_PROVIDER = os.environ.get('AI_PROVIDER', 'keyword')
-    GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
-    GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-1.5-flash')
-    AI_TIMEOUT_SECONDS = int(os.environ.get('AI_TIMEOUT_SECONDS', 10))
+AI_PROVIDER = config('AI_PROVIDER', default='keyword')
+GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
+GEMINI_MODEL = config('GEMINI_MODEL', default='gemini-1.5-flash')
+AI_TIMEOUT_SECONDS = config('AI_TIMEOUT_SECONDS', default=10, cast=int)
 
 # ─── Semantic Duplicate Detection ────────────────────────────────────────────
 SIMILARITY_THRESHOLD = 0.80  # Cosine similarity above this triggers a DuplicateFlag

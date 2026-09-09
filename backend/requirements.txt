@@ -4,6 +4,7 @@ djangorestframework-simplejwt==5.3.1
 django-cors-headers==4.4.0
 Pillow==10.4.0
 python-decouple==3.8
+dj-database-url==2.2.0
 langdetect==1.0.9
 deep-translator==1.11.4
 # Optional: enable Gemini AI provider (set AI_PROVIDER=gemini in .env)

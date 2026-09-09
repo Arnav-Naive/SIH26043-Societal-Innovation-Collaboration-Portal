@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 const ROLE_REDIRECTS = {
@@ -21,6 +21,7 @@ const ROLE_OPTIONS = [
 export default function Register() {
   const { register } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [form, setForm] = useState({
     username: '', email: '', first_name: '', last_name: '',
     password: '', password2: '', role: 'citizen',
@@ -40,7 +41,12 @@ export default function Register() {
     setLoading(true)
     try {
       const user = await register(form)
-      navigate(ROLE_REDIRECTS[user.role] || '/citizen/my-challenges')
+      const nextUrl = searchParams.get('next')
+      if (nextUrl) {
+        navigate(nextUrl)
+      } else {
+        navigate(ROLE_REDIRECTS[user.role] || '/citizen/my-challenges')
+      }
     } catch (err) {
       if (err.response?.data) {
         const apiErrors = err.response.data

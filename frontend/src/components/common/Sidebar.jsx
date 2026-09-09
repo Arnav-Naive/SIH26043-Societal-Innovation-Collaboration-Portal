@@ -60,11 +60,6 @@ export default function Sidebar() {
   const navItems = NAV_ITEMS[user.role] || []
   const initials = `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() || user.username[0].toUpperCase()
 
-  const handleLogout = async () => {
-    await logout()
-    navigate('/login')
-  }
-
   // Render group or flat items
   const renderNavItems = () => {
     if (user.role === 'gov_admin') {
@@ -125,9 +120,6 @@ export default function Sidebar() {
             <div className="sidebar-user-role">{ROLE_LABEL[user.role]}</div>
           </div>
         </div>
-        <button className="sidebar-logout-btn" onClick={handleLogout}>
-          <span>⏻</span> Sign Out
-        </button>
       </div>
     </aside>
   )

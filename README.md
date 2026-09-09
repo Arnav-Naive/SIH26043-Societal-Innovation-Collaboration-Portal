@@ -1,58 +1,45 @@
-# SamadhanX - Societal Innovation Collaboration Portal
-**SIH 26043**
+# SamadhanX - Societal Innovation Collaboration Portal (SIH 26043)
 
-SamadhanX is a comprehensive civic innovation platform connecting citizens, government bodies, higher education institutions (HEIs), and industry partners to collaborate on and solve localized societal challenges.
+A centralized platform bridging the gap between local societal problems and academic/industry innovation, designed for the Smart India Hackathon.
 
-## Architecture
+## Local Setup
 
-This project is built using:
-- **Backend:** Django 5, Django REST Framework, SQLite (dev) / PostgreSQL (prod).
-- **Frontend:** React, Vite, React Router, Recharts, Zustand.
-- **Styling:** Custom CSS implementing a professional, institutional design system.
-
-## Prerequisites
-- Python 3.10+
-- Node.js 18+
-
----
-
-## 1. Backend Setup (Django)
-
+### 1. Backend Setup
 1. Navigate to the backend directory:
    ```bash
    cd backend
    ```
-2. Create and activate a virtual environment:
+2. Create a virtual environment and activate it:
    ```bash
    python -m venv venv
-   # On Windows:
+   # Windows:
    venv\Scripts\activate
-   # On macOS/Linux:
+   # Mac/Linux:
    source venv/bin/activate
    ```
 3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-4. Run database migrations:
+4. Create a `.env` file in the `backend` directory (for python-decouple):
+   ```env
+   SECRET_KEY=dev-secret-key
+   DEBUG=True
+   ALLOWED_HOSTS=*
+   CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+   # DATABASE_URL is optional for local dev, defaults to SQLite
+   ```
+5. Run migrations and seed demo data:
    ```bash
    python manage.py migrate
    ```
-5. Seed the database with demo users, universities, and challenges:
-   ```bash
-   python manage.py seed_demo
-   ```
-6. Start the development server:
+6. Start the backend server:
    ```bash
    python manage.py runserver
    ```
-   The backend API will run at `http://localhost:8000`.
 
----
-
-## 2. Frontend Setup (React/Vite)
-
-1. Open a new terminal and navigate to the frontend directory:
+### 2. Frontend Setup
+1. Navigate to the frontend directory:
    ```bash
    cd frontend
    ```
@@ -60,29 +47,39 @@ This project is built using:
    ```bash
    npm install
    ```
-3. Start the development server:
+3. Create a `.env.local` file in the `frontend` directory:
+   ```env
+   VITE_API_BASE_URL=http://localhost:8000/api
+   ```
+4. Start the development server:
    ```bash
    npm run dev
    ```
-   The frontend will run at `http://localhost:5173`. The Vite proxy is pre-configured to forward API requests to port 8000.
 
----
+## Production Deployment
 
-## Demo Users
+### Backend (e.g., Railway, Render)
+Deploy the `backend` directory as a Python/Django app. Set the following environment variables in your hosting dashboard:
+- `SECRET_KEY`: A strong secret key.
+- `DEBUG`: `False`
+- `ALLOWED_HOSTS`: The domain of your backend (e.g., `api.samadhanx.com`)
+- `CORS_ALLOWED_ORIGINS`: The domain of your frontend (e.g., `https://samadhanx.com`)
+- `DATABASE_URL`: PostgreSQL connection string provided by your host.
 
-All demo users share the same password: **`Demo@1234`**
+### Frontend (Cloudflare Pages)
+Deploy the `frontend` directory to Cloudflare Pages.
+- **Build command:** `npm run build`
+- **Build directory:** `dist`
 
-| Role | Username | Description |
-| :--- | :--- | :--- |
-| **Citizen** | `citizen1` | Submit societal problems and track status. |
-| **Gov Admin** | `admin` | View analytics, manage challenges, and route them to HEIs. |
-| **HEI SPOC** | `hei_spoc1` | Receive assigned challenges and form project teams. |
-| **Faculty Mentor**| `faculty1` | Mentor student teams, create and review project milestones. |
-| **Industry** | `industry1` | Browse active projects and offer funding or mentorship support. |
+Set the following environment variable in Cloudflare Pages:
+- `VITE_API_BASE_URL`: The public URL of your backend (e.g., `https://api.samadhanx.com/api`)
 
-## Application Structure & Workflows
+## Demo Credentials
 
-- **Citizen App:** Mobile-first interface for submitting localized issues with photo evidence, categorization, and tracking.
-- **Admin Dashboard:** Centralized view for government officials with analytical charts to route problems based on district and category.
-- **University Hub:** Project management for HEIs to assign faculty and student teams to solve routed problems.
-- **Industry Portal:** Browsing platform for private sector partners to view in-progress societal projects and pledge funding or pilot infrastructure.
+You can use the following credentials to test the different roles:
+
+- **Government Admin:** `admin` / `Demo@1234`
+- **Citizen:** `citizen1` / `Demo@1234`
+- **HEI SPOC:** `hei_spoc1` / `Demo@1234`
+- **Faculty Mentor:** `faculty1` / `Demo@1234`
+- **Industry Partner:** `industry1` / `Demo@1234`

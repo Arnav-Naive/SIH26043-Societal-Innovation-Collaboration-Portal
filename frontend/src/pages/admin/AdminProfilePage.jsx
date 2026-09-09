@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getMe, updateProfile } from '../../api/auth'
 import TopHeader from '../../components/common/TopHeader'
 import LoadingPage from '../../components/common/LoadingPage'
+import { useAuth } from '../../context/AuthContext'
 
 export default function AdminProfilePage() {
   const [profile, setProfile] = useState({
@@ -15,6 +17,9 @@ export default function AdminProfilePage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+
+  const { logout } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchProfile()

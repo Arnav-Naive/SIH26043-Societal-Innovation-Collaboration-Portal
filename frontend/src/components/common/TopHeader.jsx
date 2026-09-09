@@ -13,7 +13,7 @@ const ROLE_LABEL = {
 }
 
 export default function TopHeader({ title }) {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
 
   const [notifs, setNotifs] = useState([])
@@ -180,12 +180,22 @@ export default function TopHeader({ title }) {
             )}
           </div>
 
-          <Link to="/admin/profile" className="top-header-user" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <Link to={user.role === 'citizen' ? '/citizen/profile' : '/admin/profile'} className="top-header-user" style={{ textDecoration: 'none', color: 'inherit' }}>
             {user.first_name} {user.last_name}
           </Link>
           <span className="top-header-role-badge">
             {ROLE_LABEL[user.role] || user.role}
           </span>
+          <button
+            className="btn btn-ghost"
+            style={{ color: 'var(--color-error)', padding: '4px 8px', fontSize: '13px', fontWeight: 600 }}
+            onClick={async () => {
+              await logout()
+              navigate('/login')
+            }}
+          >
+            Logout
+          </button>
         </div>
       )}
     </header>
