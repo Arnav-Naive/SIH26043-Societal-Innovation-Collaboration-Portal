@@ -11,9 +11,9 @@ class UniversitySerializer(serializers.ModelSerializer):
     class Meta:
         model = University
         fields = (
-            'id', 'name', 'district', 'state', 'expertise_areas',
+            'id', 'name', 'institution_type', 'registration_id', 'address', 'district', 'state', 'expertise_areas',
             'contact_email', 'contact_phone', 'website',
-            'spoc_name', 'assigned_challenges_count',
+            'spoc_name', 'assigned_challenges_count', 'status', 'departments', 'facilities'
         )
 
     def get_spoc_name(self, obj):
@@ -21,6 +21,24 @@ class UniversitySerializer(serializers.ModelSerializer):
 
     def get_assigned_challenges_count(self, obj):
         return obj.assigned_challenges.count()
+
+class AdminHEIApprovalSerializer(serializers.ModelSerializer):
+    spoc_name = serializers.SerializerMethodField()
+    district_name = serializers.CharField(source='district.name', read_only=True)
+    spoc_email = serializers.CharField(source='spoc.email', read_only=True)
+    spoc_phone = serializers.CharField(source='spoc.phone', read_only=True)
+
+    class Meta:
+        model = University
+        fields = (
+            'id', 'name', 'institution_type', 'registration_id', 'address', 'district_name', 'state',
+            'contact_email', 'contact_phone', 'website', 'departments', 'facilities',
+            'spoc_name', 'spoc_email', 'spoc_phone', 'designation', 'status', 'verification_document',
+            'created_at'
+        )
+
+    def get_spoc_name(self, obj):
+        return obj.spoc.get_full_name() or obj.spoc.username if obj.spoc else None
 
 
 class UniversityMatchSerializer(serializers.ModelSerializer):
@@ -62,19 +80,26 @@ class ProjectTeamSerializer(serializers.ModelSerializer):
         queryset=__import__('accounts.models', fromlist=['User']).User.objects.filter(role='faculty_mentor'),
         source='faculty_mentor', write_only=True, required=False, allow_null=True
     )
-    milestone_count = serializers.IntegerField(read_only=True)
-    approved_milestones = serializers.IntegerField(read_only=True)
+    milestones = __import__('projects.serializers', fromlist=['MilestoneSerializer']).MilestoneSerializer(many=True, read_only=True)
+    milestone_count = serializers.SerializerMethodField()
+    approved_milestones = serializers.SerializerMethodField()
     partnerships_count = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectTeam
         fields = (
             'id', 'challenge', 'challenge_id', 'university', 'faculty_mentor', 'faculty_mentor_id',
-            'students', 'project_description', 'stage',
-            'milestone_count', 'approved_milestones', 'partnerships_count',
+            'students', 'project_title', 'objective', 'domain', 'project_description',
+            'stage', 'milestones', 'milestone_count', 'approved_milestones', 'partnerships_count',
             'created_at', 'updated_at',
         )
         read_only_fields = ('id', 'university', 'created_at', 'updated_at')
 
     def get_partnerships_count(self, obj):
         return obj.partnerships.count()
+
+    def get_milestone_count(self, obj):
+        return obj.milestones.count()
+
+    def get_approved_milestones(self, obj):
+        return obj.milestones.filter(status='APPROVED').count()

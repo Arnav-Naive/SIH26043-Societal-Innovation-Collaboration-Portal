@@ -26,6 +26,7 @@ const NAV_ITEMS = {
       { to: '/admin/problem-twins', label: 'Problem Twins', icon: '🧬' },
       { to: '/admin/challenges', label: 'Challenges', icon: '📁' },
       { to: '/admin/duplicate-review', label: 'Duplicate Review', icon: '🔀' },
+      { to: '/admin/hei-approvals', label: 'HEI Approvals', icon: '🏛️' },
       { to: '/admin/universities', label: 'Universities', icon: '🎓' },
       { to: '/admin/industry', label: 'Industry Partners', icon: '🏭' },
     ]},
@@ -39,8 +40,9 @@ const NAV_ITEMS = {
     ]},
   ],
   hei_spoc: [
+    { to: '/hei/dashboard', label: 'Dashboard', icon: '🏠' },
     { to: '/hei/assigned-challenges', label: 'Assigned Challenges', icon: '📥' },
-    { to: '/hei/my-teams', label: 'My Teams', icon: '👥' },
+    { to: '/hei/my-teams', label: 'My Projects', icon: '🚀' },
   ],
   faculty_mentor: [
     { to: '/faculty/my-teams', label: 'My Teams', icon: '👥' },

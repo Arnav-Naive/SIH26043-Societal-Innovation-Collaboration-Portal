@@ -22,7 +22,12 @@ axiosClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Only attempt token refresh if:
+    // 1. Response was 401
+    // 2. We haven't retried yet
+    // 3. There IS an access token (i.e. this was an authenticated request)
+    const hasToken = !!localStorage.getItem('access_token')
+    if (error.response?.status === 401 && !originalRequest._retry && hasToken) {
       originalRequest._retry = true
       try {
         const refresh = localStorage.getItem('refresh_token')
@@ -33,6 +38,7 @@ axiosClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${data.access}`
         return axiosClient(originalRequest)
       } catch {
+        // Refresh failed — clear session and force re-login
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         localStorage.removeItem('user')

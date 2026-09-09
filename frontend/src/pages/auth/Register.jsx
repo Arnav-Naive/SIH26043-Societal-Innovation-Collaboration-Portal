@@ -111,7 +111,13 @@ export default function Register() {
               name="role"
               className="form-control"
               value={form.role}
-              onChange={handleChange}
+              onChange={(e) => {
+                if (e.target.value === 'hei_spoc') {
+                  navigate('/register-hei')
+                } else {
+                  handleChange(e)
+                }
+              }}
             >
               {ROLE_OPTIONS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>

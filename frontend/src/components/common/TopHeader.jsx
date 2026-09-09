@@ -13,7 +13,7 @@ const ROLE_LABEL = {
 }
 
 export default function TopHeader({ title }) {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
 
   const [notifs, setNotifs] = useState([])
@@ -94,10 +94,9 @@ export default function TopHeader({ title }) {
 
       {user?.role === 'citizen' && (
         <nav className="desktop-only" style={{ display: 'flex', gap: '24px', alignItems: 'center', margin: '0 auto' }}>
-          <Link to="/" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>Home</Link>
-          <Link to="/citizen/submit-challenge" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>Report a Problem</Link>
-          <Link to="/citizen/my-challenges" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>My Problems</Link>
-          <Link to="/citizen/my-challenges" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>Track Issue</Link>
+          <Link to="/" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>Home</Link>
+          <Link to="/citizen/submit-challenge" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>Report a Problem</Link>
+          <Link to="/citizen/my-challenges" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>My Problems</Link>
         </nav>
       )}
 
@@ -135,7 +134,7 @@ export default function TopHeader({ title }) {
             </div>
           )}
 
-          <div className="notifications-container" ref={notifRef} style={{ position: 'relative' }}>
+          <div className={`notifications-container ${user.role === 'citizen' ? 'desktop-only' : ''}`} ref={notifRef} style={{ position: 'relative' }}>
             <button
               className="btn btn-ghost"
               style={{ position: 'relative', padding: '8px' }}
@@ -180,12 +179,25 @@ export default function TopHeader({ title }) {
             )}
           </div>
 
-          <Link to="/admin/profile" className="top-header-user" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <Link to="/admin/profile" className="top-header-user desktop-only" style={{ textDecoration: 'none', color: 'inherit' }}>
             {user.first_name} {user.last_name}
           </Link>
-          <span className="top-header-role-badge">
+          <span className="top-header-role-badge desktop-only">
             {ROLE_LABEL[user.role] || user.role}
           </span>
+          {user.role === 'citizen' && (
+            <button 
+              onClick={async () => { await logout(); navigate('/login') }}
+              className="btn btn-ghost desktop-only"
+              style={{ color: 'var(--color-danger)', fontSize: 14, fontWeight: 600, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6 }}
+              title="Sign Out"
+            >
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Sign Out
+            </button>
+          )}
         </div>
       )}
     </header>

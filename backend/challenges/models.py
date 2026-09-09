@@ -6,6 +6,8 @@ class Challenge(models.Model):
     STATUS_SUBMITTED = 'SUBMITTED'
     STATUS_UNDER_REVIEW = 'UNDER_REVIEW'
     STATUS_ROUTED = 'ROUTED'
+    STATUS_ACCEPTED = 'ACCEPTED'
+    STATUS_REJECTED = 'REJECTED'
     STATUS_IN_PROGRESS = 'IN_PROGRESS'
     STATUS_COMPLETED = 'COMPLETED'
 
@@ -13,6 +15,8 @@ class Challenge(models.Model):
         (STATUS_SUBMITTED, 'Submitted'),
         (STATUS_UNDER_REVIEW, 'Under Review'),
         (STATUS_ROUTED, 'Routed'),
+        (STATUS_ACCEPTED, 'Accepted by HEI'),
+        (STATUS_REJECTED, 'Rejected'),
         (STATUS_IN_PROGRESS, 'In Progress'),
         (STATUS_COMPLETED, 'Completed'),
     ]

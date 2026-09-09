@@ -81,7 +81,7 @@ export default function MyTeams() {
               <div key={team.id} className="card">
                 <div className="card-header">
                   <div>
-                    <div className="card-title">{team.challenge?.title}</div>
+                    <div className="card-title">{team.project_title || team.challenge?.title}</div>
                     <div style={{ fontSize: 12, color: 'var(--gray-400)', marginTop: 4 }}>
                       📍 {team.challenge?.district} · {team.challenge?.category}
                     </div>
@@ -124,13 +124,7 @@ export default function MyTeams() {
                       className="btn btn-primary btn-sm"
                       onClick={() => navigate(`/hei/teams/${team.id}`)}
                     >
-                      Open Project
-                    </button>
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => navigate(`/hei/teams/${team.id}/milestones`)}
-                    >
-                      Milestones
+                      Open Project Workspace
                     </button>
                   </div>
                 </div>

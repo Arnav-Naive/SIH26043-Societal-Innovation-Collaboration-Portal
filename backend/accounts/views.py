@@ -12,6 +12,20 @@ from .models import User, Notification
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
+        
+        if self.user.role == User.ROLE_HEI_SPOC:
+            from universities.models import University
+            try:
+                university = University.objects.get(spoc=self.user)
+                if university.status == University.STATUS_PENDING:
+                    from rest_framework.exceptions import AuthenticationFailed
+                    raise AuthenticationFailed('Account pending verification by Government Admin.')
+                elif university.status == University.STATUS_REJECTED:
+                    from rest_framework.exceptions import AuthenticationFailed
+                    raise AuthenticationFailed(f'Registration rejected: {university.rejection_reason}')
+            except University.DoesNotExist:
+                pass
+                
         data['user'] = UserSerializer(self.user).data
         return data
 
