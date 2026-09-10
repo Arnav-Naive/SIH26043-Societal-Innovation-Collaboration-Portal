@@ -64,10 +64,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+sqlite_db_path = str(BASE_DIR / 'db.sqlite3').replace('\\', '/')
+
 DATABASES = {
     'default': config(
         'DATABASE_URL',
-        default=f"sqlite:///{str(BASE_DIR / 'db.sqlite3').replace('\\', '/')}",
+        default=f"sqlite:///{sqlite_db_path}",
         cast=dj_database_url.parse
     )
 }
