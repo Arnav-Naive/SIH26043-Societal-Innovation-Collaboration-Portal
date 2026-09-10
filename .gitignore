@@ -4,8 +4,13 @@ __pycache__/
 *.sqlite3
 db.sqlite3
 backend/media/
+backend/staticfiles/
+backend/venv/
 .env
+.env.local
 node_modules/
 dist/
 build/
 .DS_Store
+*.egg-info/
+.pytest_cache/

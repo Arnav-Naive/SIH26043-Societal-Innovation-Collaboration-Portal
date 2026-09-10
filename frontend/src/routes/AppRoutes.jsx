@@ -38,6 +38,8 @@ const FacultyTeamDetail = lazy(() => import('../pages/faculty/TeamDetail'))
 
 const BrowseProjects = lazy(() => import('../pages/industry/BrowseProjects'))
 const MyPartnerships = lazy(() => import('../pages/industry/MyPartnerships'))
+const PartnershipDetail = lazy(() => import('../pages/industry/PartnershipDetail'))
+const ImpactSummary = lazy(() => import('../pages/industry/ImpactSummary'))
 
 const LandingPage = lazy(() => import('../pages/public/LandingPage'))
 
@@ -75,6 +77,9 @@ export default function AppRoutes() {
         <Route path="/citizen/profile" element={
           <ProtectedRoute allowedRoles={['citizen']}><AdminProfilePage /></ProtectedRoute>
         } />
+        <Route path="/profile" element={
+          <ProtectedRoute allowedRoles={['gov_admin', 'hei_spoc', 'faculty_mentor', 'industry_partner']}><AdminProfilePage /></ProtectedRoute>
+        } />
         <Route path="/citizen/notifications" element={
           <ProtectedRoute allowedRoles={['citizen']}><CitizenNotificationsPage /></ProtectedRoute>
         } />
@@ -100,9 +105,6 @@ export default function AppRoutes() {
         } />
         <Route path="/admin/ai-config" element={
           <ProtectedRoute allowedRoles={['gov_admin']}><AIConfigPage /></ProtectedRoute>
-        } />
-        <Route path="/admin/profile" element={
-          <ProtectedRoute allowedRoles={['gov_admin']}><AdminProfilePage /></ProtectedRoute>
         } />
         <Route path="/admin/reports" element={
           <ProtectedRoute allowedRoles={['gov_admin']}><AdminReportsPage /></ProtectedRoute>
@@ -148,6 +150,15 @@ export default function AppRoutes() {
         } />
         <Route path="/industry/partnerships" element={
           <ProtectedRoute allowedRoles={['industry_partner']}><MyPartnerships /></ProtectedRoute>
+        } />
+        <Route path="/industry/partnerships/:id" element={
+          <ProtectedRoute allowedRoles={['industry_partner']}><PartnershipDetail /></ProtectedRoute>
+        } />
+        <Route path="/industry/impact" element={
+          <ProtectedRoute allowedRoles={['industry_partner']}><ImpactSummary /></ProtectedRoute>
+        } />
+        <Route path="/industry/notifications" element={
+          <ProtectedRoute allowedRoles={['industry_partner']}><CitizenNotificationsPage /></ProtectedRoute>
         } />
 
         {/* 404 */}

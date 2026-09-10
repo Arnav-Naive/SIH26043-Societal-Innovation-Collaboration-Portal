@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getMe, updateProfile } from '../../api/auth'
 import TopHeader from '../../components/common/TopHeader'
 import LoadingPage from '../../components/common/LoadingPage'
 import { useAuth } from '../../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+
 
 export default function AdminProfilePage() {
   const [profile, setProfile] = useState({
@@ -19,6 +20,7 @@ export default function AdminProfilePage() {
   const navigate = useNavigate()
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+
 
   useEffect(() => {
     fetchProfile()

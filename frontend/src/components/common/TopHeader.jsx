@@ -179,25 +179,26 @@ export default function TopHeader({ title }) {
             )}
           </div>
 
-          <Link to="/admin/profile" className="top-header-user desktop-only" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <Link to={user.role === 'citizen' ? '/citizen/profile' : '/profile'} className="top-header-user desktop-only" style={{ textDecoration: 'none', color: 'inherit' }}>
             {user.first_name} {user.last_name}
           </Link>
           <span className="top-header-role-badge desktop-only">
             {ROLE_LABEL[user.role] || user.role}
           </span>
-          {user.role === 'citizen' && (
-            <button 
-              onClick={async () => { await logout(); navigate('/login') }}
-              className="btn btn-ghost desktop-only"
-              style={{ color: 'var(--color-danger)', fontSize: 14, fontWeight: 600, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6 }}
-              title="Sign Out"
-            >
-              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Sign Out
-            </button>
-          )}
+          <button
+            className="btn btn-ghost desktop-only"
+            style={{ color: 'var(--color-danger)', padding: '6px 12px', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}
+            onClick={async () => {
+              await logout()
+              navigate('/login')
+            }}
+            title="Sign Out"
+          >
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Sign Out
+          </button>
         </div>
       )}
     </header>

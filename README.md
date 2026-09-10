@@ -1,88 +1,62 @@
-# SamadhanX - Societal Innovation Collaboration Portal
-**SIH 26043**
+# SamadhanX (SIH 26043)
 
-SamadhanX is a comprehensive civic innovation platform connecting citizens, government bodies, higher education institutions (HEIs), and industry partners to collaborate on and solve localized societal challenges.
+A societal-problem-to-innovation pipeline connecting citizens, government, higher education institutions (HEIs), and industry partners.
 
 ## Architecture
+- Django 5 + DRF + SQLite (dev) / PostgreSQL (prod)
+- React + Vite + React Router
+- WhiteNoise for static files
+- sentence-transformers for semantic duplicate detection
+- Gemini AI for challenge categorization
 
-This project is built using:
-- **Backend:** Django 5, Django REST Framework, SQLite (dev) / PostgreSQL (prod).
-- **Frontend:** React, Vite, React Router, Recharts, Zustand.
-- **Styling:** Custom CSS implementing a professional, institutional design system.
+## Local Setup
 
-## Prerequisites
-- Python 3.10+
-- Node.js 18+
-
----
-
-## 1. Backend Setup (Django)
-
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
+1. `git clone` → `cd backend` → `python -m venv venv` → activate
+2. `pip install -r requirements.txt`
+3. Create `backend/.env` with exact contents:
    ```
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv venv
-   # On Windows:
-   venv\Scripts\activate
-   # On macOS/Linux:
-   source venv/bin/activate
+   SECRET_KEY=dev-secret-key-change-this
+   DEBUG=True
+   ALLOWED_HOSTS=*
+   CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+   DATABASE_URL=sqlite:///db.sqlite3
+   AI_PROVIDER=gemini
+   GEMINI_API_KEY=your-gemini-api-key
    ```
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
+4. `python manage.py migrate`
+5. `python manage.py seed_demo`
+6. `python manage.py runserver`
+7. New terminal → `cd frontend` → `npm install`
+8. Create `frontend/.env.local` with:
    ```
-4. Run database migrations:
-   ```bash
-   python manage.py migrate
+   VITE_API_BASE_URL=http://localhost:8000/api
    ```
-5. Seed the database with demo users, universities, and challenges:
-   ```bash
-   python manage.py seed_demo
-   ```
-6. Start the development server:
-   ```bash
-   python manage.py runserver
-   ```
-   The backend API will run at `http://localhost:8000`.
+9. `npm run dev` → visit http://localhost:5173
 
----
+## Production Deployment
 
-## 2. Frontend Setup (React/Vite)
+**Railway (Backend):**
+- Connect GitHub repo, set root to `/backend`
+- Start command: `gunicorn config.wsgi:application`
+- Add Postgres plugin (DATABASE_URL auto-set)
+- Env vars to set: SECRET_KEY, DEBUG=False, ALLOWED_HOSTS, CORS_ALLOWED_ORIGINS, DATABASE_URL, AI_PROVIDER, GEMINI_API_KEY
+- Run migration: use Railway shell or add to release command
 
-1. Open a new terminal and navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-   The frontend will run at `http://localhost:5173`. The Vite proxy is pre-configured to forward API requests to port 8000.
+**Cloudflare Pages (Frontend):**
+- Connect GitHub repo
+- Root directory: `frontend`
+- Build command: `npm run build`
+- Output directory: `dist`
+- Env var: `VITE_API_BASE_URL=https://<your-railway-domain>/api`
+- Auto-deploys on every push to `main`
 
----
+## Demo Credentials
+All roles use the password: `Demo@1234`
 
-## Demo Users
-
-All demo users share the same password: **`Demo@1234`**
-
-| Role | Username | Description |
-| :--- | :--- | :--- |
-| **Citizen** | `citizen1` | Submit societal problems and track status. |
-| **Gov Admin** | `admin` | View analytics, manage challenges, and route them to HEIs. |
-| **HEI SPOC** | `hei_spoc1` | Receive assigned challenges and form project teams. |
-| **Faculty Mentor**| `faculty1` | Mentor student teams, create and review project milestones. |
-| **Industry** | `industry1` | Browse active projects and offer funding or mentorship support. |
-
-## Application Structure & Workflows
-
-- **Citizen App:** Mobile-first interface for submitting localized issues with photo evidence, categorization, and tracking.
-- **Admin Dashboard:** Centralized view for government officials with analytical charts to route problems based on district and category.
-- **University Hub:** Project management for HEIs to assign faculty and student teams to solve routed problems.
-- **Industry Portal:** Browsing platform for private sector partners to view in-progress societal projects and pledge funding or pilot infrastructure.
+| Role | Username |
+|---|---|
+| Government Admin | `admin` |
+| Citizen | `citizen1` |
+| HEI SPOC | `hei_spoc1` |
+| Faculty Mentor | `faculty1` |
+| Industry Partner | `industry1` |

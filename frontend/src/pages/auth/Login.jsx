@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 const ROLE_REDIRECTS = {
@@ -13,6 +13,7 @@ const ROLE_REDIRECTS = {
 export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [form, setForm] = useState({ username: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -25,7 +26,12 @@ export default function Login() {
     setLoading(true)
     try {
       const user = await login(form.username, form.password)
-      navigate(ROLE_REDIRECTS[user.role] || '/citizen/my-challenges')
+      const nextUrl = searchParams.get('next')
+      if (nextUrl) {
+        navigate(nextUrl)
+      } else {
+        navigate(ROLE_REDIRECTS[user.role] || '/citizen/my-challenges')
+      }
     } catch (err) {
       // Extract error message from DRF response (multiple possible formats)
       const data = err.response?.data

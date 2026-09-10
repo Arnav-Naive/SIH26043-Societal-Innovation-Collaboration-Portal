@@ -1,18 +1,26 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import LoadingPage from '../components/common/LoadingPage'
 
 // Protect routes by role
 export function ProtectedRoute({ children, allowedRoles }) {
   const { user, loading } = useAuth()
+  const location = useLocation()
 
   if (loading) return <LoadingPage />
 
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) {
+    return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />
+  }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // Role mismatch: send user to their own home instead of showing an error
-    return <Navigate to={getRoleHome(user.role)} replace />
+    return (
+      <div style={{ padding: 40, textAlign: 'center' }}>
+        <h2>Access Restricted</h2>
+        <p>You do not have permission to view this page.</p>
+        <button onClick={() => window.location.href = getRoleHome(user.role)} className="btn btn-primary">Go to My Dashboard</button>
+      </div>
+    )
   }
 
   return children
@@ -21,8 +29,14 @@ export function ProtectedRoute({ children, allowedRoles }) {
 // Redirect authenticated users away from login/register
 export function PublicRoute({ children }) {
   const { user, loading } = useAuth()
+  const location = useLocation()
+
   if (loading) return <LoadingPage />
-  if (user) return <Navigate to={getRoleHome(user.role)} replace />
+  if (user) {
+    const searchParams = new URLSearchParams(location.search)
+    const nextUrl = searchParams.get('next')
+    return <Navigate to={nextUrl || getRoleHome(user.role)} replace />
+  }
   return children
 }
 

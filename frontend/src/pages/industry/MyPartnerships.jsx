@@ -64,6 +64,11 @@ export default function MyPartnerships() {
                   <div style={{ marginTop: 14, padding: 12, background: 'var(--gray-50)', borderRadius: 6, fontSize: 13, color: 'var(--gray-600)', lineHeight: 1.6 }}>
                     {p.contribution_details}
                   </div>
+                  <div style={{ marginTop: 16 }}>
+                    <button className="btn btn-primary btn-sm" onClick={() => window.location.href = `/industry/partnerships/${p.id}`}>
+                      View Detail
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
