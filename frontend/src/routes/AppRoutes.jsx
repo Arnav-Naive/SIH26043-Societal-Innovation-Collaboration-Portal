@@ -1,8 +1,9 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, Link } from 'react-router-dom'
 import { Suspense, lazy } from 'react'
 import { ProtectedRoute, PublicRoute, getRoleHome } from './ProtectedRoute'
 import { useAuth } from '../context/AuthContext'
 import LoadingPage from '../components/common/LoadingPage'
+import IndustryLayout from '../components/industry/IndustryLayout'
 
 // Lazy load pages for performance
 const Login = lazy(() => import('../pages/auth/Login'))
@@ -174,7 +175,10 @@ export default function AppRoutes() {
           <ProtectedRoute allowedRoles={['industry_partner']}><ImpactSummary /></ProtectedRoute>
         } />
         <Route path="/industry/notifications" element={
-          <ProtectedRoute allowedRoles={['industry_partner']}><CitizenNotificationsPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={['industry_partner']}><IndustryLayout><CitizenNotificationsPage /></IndustryLayout></ProtectedRoute>
+        } />
+        <Route path="/industry/profile" element={
+          <ProtectedRoute allowedRoles={['industry_partner']}><IndustryLayout><AdminProfilePage /></IndustryLayout></ProtectedRoute>
         } />
 
         {/* 404 */}
@@ -182,7 +186,7 @@ export default function AppRoutes() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', flexDirection: 'column', gap: 16 }}>
             <div style={{ fontSize: 40 }}>404</div>
             <h2 style={{ color: 'var(--gray-700)' }}>Page Not Found</h2>
-            <a href="/" style={{ color: 'var(--color-primary)' }}>Go Home</a>
+            <Link to="/" style={{ color: 'var(--color-primary)' }}>Go Home</Link>
           </div>
         } />
       </Routes>

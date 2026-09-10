@@ -16,7 +16,7 @@ export default function IndustryLayout({ children }) {
     { label: 'My Contributions', path: '/industry/contributions' },
     { label: 'Contribution History', path: '/industry/contribution-history' },
     { label: 'Notifications', path: '/industry/notifications' },
-    { label: 'Profile & Settings', path: '/profile' },
+    { label: 'Profile & Settings', path: '/industry/profile' },
   ]
 
   return (
@@ -52,7 +52,7 @@ export default function IndustryLayout({ children }) {
         </nav>
 
         <div className="industry-sidebar-footer">
-          <Link to="/help" className="industry-nav-item" style={{ padding: '8px 12px' }}>Help & Support</Link>
+          {/* Help link removed to prevent 404 */}
           <button 
             onClick={logout} 
             className="industry-nav-item" 

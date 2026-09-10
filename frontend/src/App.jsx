@@ -15,6 +15,12 @@ function AppLayout() {
   if (!user) return <AppRoutes />
 
   const isCitizen = user.role === 'citizen'
+  const isIndustry = user.role === 'industry_partner'
+
+  // Industry portal uses its own custom layout shell
+  if (isIndustry) {
+    return <AppRoutes />
+  }
 
   return (
     <div className={`app-shell ${isCitizen ? 'citizen-shell' : ''}`}>
