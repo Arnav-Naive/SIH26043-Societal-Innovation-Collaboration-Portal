@@ -13,6 +13,11 @@ export function ProtectedRoute({ children, allowedRoles }) {
     return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />
   }
 
+  // Force citizens to select language
+  if (user.role === 'citizen' && !user.preferred_language && location.pathname !== '/citizen/language-setup') {
+    return <Navigate to="/citizen/language-setup" replace />
+  }
+
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return (
       <div style={{ padding: 40, textAlign: 'center' }}>
@@ -46,7 +51,7 @@ export function getRoleHome(role) {
     gov_admin: '/admin/dashboard',
     hei_spoc: '/hei/assigned-challenges',
     faculty_mentor: '/faculty/my-teams',
-    industry_partner: '/industry/browse-projects',
+    industry_partner: '/industry/dashboard',
   }
   return map[role] || '/login'
 }

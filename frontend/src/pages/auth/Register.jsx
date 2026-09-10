@@ -84,74 +84,109 @@ export default function Register() {
   )
 
   return (
-    <div className="auth-page">
-      <div className="auth-card" style={{ maxWidth: 560 }}>
-        <div className="auth-brand">
-          <div className="auth-brand-logo">S</div>
-          <div className="auth-brand-name">SamadhanX</div>
-          <div className="auth-brand-sub">Societal Innovation Collaboration Portal</div>
+    <div className="split-auth-container">
+      {/* Left Visual Panel */}
+      <div className="auth-visual-panel">
+        <div className="auth-visual-content">
+          <div className="auth-visual-title" style={{ fontSize: '3rem' }}>
+            Join the<br />Change.
+          </div>
+          <div className="auth-visual-subtitle" style={{ marginBottom: '2rem' }}>
+            Be a part of Jharkhand's innovation movement.
+          </div>
+          
+          <div className="auth-visual-list">
+            <div className="auth-visual-list-item">
+              <span style={{ fontSize: '1.5rem' }}>🌱</span> Report real problems
+            </div>
+            <div className="auth-visual-list-item">
+              <span style={{ fontSize: '1.5rem' }}>🤝</span> Collaborate on solutions
+            </div>
+            <div className="auth-visual-list-item">
+              <span style={{ fontSize: '1.5rem' }}>🚀</span> Create real impact
+            </div>
+          </div>
         </div>
+      </div>
 
-        <h1 className="auth-form-title">Create Account</h1>
-        <p className="auth-form-sub">Register to participate in India's civic innovation platform.</p>
+      {/* Right Form Panel */}
+      <div className="auth-form-panel">
 
-        {errors.non_field_errors && (
-          <div className="alert alert-error" role="alert">{errors.non_field_errors[0]}</div>
-        )}
-
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="grid-2">
-            {field('first_name', 'First Name', 'text', true)}
-            {field('last_name', 'Last Name', 'text', true)}
+        <div className="auth-card register-card">
+          <div className="auth-brand" style={{ justifyContent: 'center', marginBottom: '2rem' }}>
+            <img src="/images/logo.png" alt="SamadhanX Logo" style={{ width: '100%', maxWidth: '240px', objectFit: 'contain' }} />
           </div>
 
-          {field('username', 'Username', 'text', true)}
-          {field('email', 'Email Address', 'email', true)}
+          <h1 className="auth-form-title">Create Your Account</h1>
+          <p className="auth-form-sub" style={{ marginBottom: '1.5rem' }}>
+            Join SamadhanX and contribute to a better Jharkhand
+          </p>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="reg-role">
-              Role <span className="required">*</span>
-            </label>
-            <select
-              id="reg-role"
-              name="role"
-              className="form-control"
-              value={form.role}
-              onChange={(e) => {
-                if (e.target.value === 'hei_spoc') {
-                  navigate('/register-hei')
-                } else {
-                  handleChange(e)
-                }
-              }}
+          {errors.non_field_errors && (
+            <div className="alert alert-error" role="alert">{errors.non_field_errors[0]}</div>
+          )}
+
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="grid-2">
+              {field('first_name', 'First Name', 'text', true)}
+              {field('last_name', 'Last Name', 'text', true)}
+            </div>
+
+            <div className="grid-2">
+              {field('username', 'Username', 'text', true)}
+              {field('email', 'Email Address', 'email', true)}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="reg-role">
+                Role <span className="required">*</span>
+              </label>
+              <select
+                id="reg-role"
+                name="role"
+                className="form-control"
+                value={form.role}
+                onChange={(e) => {
+                  if (e.target.value === 'hei_spoc') {
+                    navigate('/register-hei')
+                  } else {
+                    handleChange(e)
+                  }
+                }}
+              >
+                {ROLE_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid-2">
+              {field('phone', 'Phone Number')}
+              {field('district', 'District / City')}
+            </div>
+            
+            {field('organization', 'Organization / Institution')}
+
+            <div className="auth-divider" style={{ margin: '1rem 0' }} />
+
+            <div className="grid-2">
+              {field('password', 'Password', 'password', true)}
+              {field('password2', 'Confirm Password', 'password', true)}
+            </div>
+
+            <button
+              type="submit"
+              className="btn-auth-primary"
+              disabled={loading}
+              style={{ marginTop: '8px' }}
             >
-              {ROLE_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+              {loading ? <><span className="spinner spinner-sm" /> Creating Account...</> : 'Create Account →'}
+            </button>
+          </form>
+
+          <div className="auth-link">
+            Already have an account? <Link to="/login">Sign In</Link>
           </div>
-
-          {field('phone', 'Phone Number')}
-          {field('district', 'District / City')}
-          {field('organization', 'Organization / Institution')}
-
-          <div className="divider" />
-
-          {field('password', 'Password', 'password', true)}
-          {field('password2', 'Confirm Password', 'password', true)}
-
-          <button
-            type="submit"
-            className="btn btn-primary btn-lg btn-block"
-            disabled={loading}
-            style={{ marginTop: 8 }}
-          >
-            {loading ? <><span className="spinner spinner-sm" /> Creating Account...</> : 'Create Account'}
-          </button>
-        </form>
-
-        <div className="auth-link">
-          Already have an account? <Link to="/login">Sign In</Link>
         </div>
       </div>
     </div>

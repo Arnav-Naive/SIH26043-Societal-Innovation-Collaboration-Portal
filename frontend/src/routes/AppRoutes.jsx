@@ -14,6 +14,7 @@ const MyChallenges = lazy(() => import('../pages/citizen/MyChallenges'))
 const SubmitChallenge = lazy(() => import('../pages/citizen/SubmitChallenge'))
 const CitizenChallengeDetail = lazy(() => import('../pages/citizen/ChallengeDetail'))
 const CitizenNotificationsPage = lazy(() => import('../pages/citizen/CitizenNotificationsPage'))
+const LanguageSelection = lazy(() => import('../pages/citizen/LanguageSelection'))
 
 const AdminDashboard = lazy(() => import('../pages/admin/Dashboard'))
 const AdminChallengeDetail = lazy(() => import('../pages/admin/ChallengeDetail'))
@@ -40,6 +41,9 @@ const BrowseProjects = lazy(() => import('../pages/industry/BrowseProjects'))
 const MyPartnerships = lazy(() => import('../pages/industry/MyPartnerships'))
 const PartnershipDetail = lazy(() => import('../pages/industry/PartnershipDetail'))
 const ImpactSummary = lazy(() => import('../pages/industry/ImpactSummary'))
+const IndustryDashboard = lazy(() => import('../pages/industry/Dashboard'))
+const MyContributions = lazy(() => import('../pages/industry/MyContributions'))
+const ContributionHistory = lazy(() => import('../pages/industry/ContributionHistory'))
 
 const LandingPage = lazy(() => import('../pages/public/LandingPage'))
 
@@ -82,6 +86,9 @@ export default function AppRoutes() {
         } />
         <Route path="/citizen/notifications" element={
           <ProtectedRoute allowedRoles={['citizen']}><CitizenNotificationsPage /></ProtectedRoute>
+        } />
+        <Route path="/citizen/language-setup" element={
+          <ProtectedRoute allowedRoles={['citizen']}><LanguageSelection /></ProtectedRoute>
         } />
 
         {/* Admin */}
@@ -145,6 +152,9 @@ export default function AppRoutes() {
         } />
 
         {/* Industry */}
+        <Route path="/industry/dashboard" element={
+          <ProtectedRoute allowedRoles={['industry_partner']}><IndustryDashboard /></ProtectedRoute>
+        } />
         <Route path="/industry/browse-projects" element={
           <ProtectedRoute allowedRoles={['industry_partner']}><BrowseProjects /></ProtectedRoute>
         } />
@@ -153,6 +163,12 @@ export default function AppRoutes() {
         } />
         <Route path="/industry/partnerships/:id" element={
           <ProtectedRoute allowedRoles={['industry_partner']}><PartnershipDetail /></ProtectedRoute>
+        } />
+        <Route path="/industry/contributions" element={
+          <ProtectedRoute allowedRoles={['industry_partner']}><MyContributions /></ProtectedRoute>
+        } />
+        <Route path="/industry/contribution-history" element={
+          <ProtectedRoute allowedRoles={['industry_partner']}><ContributionHistory /></ProtectedRoute>
         } />
         <Route path="/industry/impact" element={
           <ProtectedRoute allowedRoles={['industry_partner']}><ImpactSummary /></ProtectedRoute>

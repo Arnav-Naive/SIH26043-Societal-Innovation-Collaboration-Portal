@@ -48,78 +48,104 @@ export default function Login() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-brand">
-          <div className="auth-brand-logo">S</div>
-          <div className="auth-brand-name">SamadhanX</div>
-          <div className="auth-brand-sub">Societal Innovation Collaboration Portal · SIH 26043</div>
+    <div className="split-auth-container">
+      {/* Left Visual Panel */}
+      <div className="auth-visual-panel">
+        <div className="auth-visual-content">
+          <div className="auth-visual-title">
+            People.<br />
+            Problems.<br />
+            Possibilities.
+          </div>
+          <div className="auth-visual-subtitle">
+            Together for a better Jharkhand.
+          </div>
         </div>
+      </div>
 
-        <h1 className="auth-form-title">Sign In</h1>
-        <p className="auth-form-sub">
-          Enter your credentials to access the platform.
-        </p>
+      {/* Right Form Panel */}
+      <div className="auth-form-panel">
 
-        {error && (
-          <div className="alert alert-error" role="alert">{error}</div>
-        )}
-
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="form-group">
-            <label className="form-label" htmlFor="login-username">
-              Username <span className="required">*</span>
-            </label>
-            <input
-              id="login-username"
-              name="username"
-              type="text"
-              className="form-control"
-              value={form.username}
-              onChange={handleChange}
-              required
-              autoFocus
-              autoComplete="username"
-            />
+        <div className="auth-card">
+          <div className="auth-brand" style={{ justifyContent: 'center', marginBottom: '2rem' }}>
+            <img src="/images/logo.png" alt="SamadhanX Logo" style={{ width: '100%', maxWidth: '240px', objectFit: 'contain' }} />
           </div>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="login-password">
-              Password <span className="required">*</span>
-            </label>
-            <input
-              id="login-password"
-              name="password"
-              type="password"
-              className="form-control"
-              value={form.password}
-              onChange={handleChange}
-              required
-              autoComplete="current-password"
-            />
+          <h1 className="auth-form-title">Welcome Back</h1>
+          <p className="auth-form-sub">
+            Login to continue your journey with SamadhanX
+          </p>
+
+          {error && (
+            <div className="alert alert-error" role="alert">{error}</div>
+          )}
+
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="form-group">
+              <label className="form-label" htmlFor="login-username">
+                Username or Email <span className="required">*</span>
+              </label>
+              <input
+                id="login-username"
+                name="username"
+                type="text"
+                className="form-control"
+                value={form.username}
+                onChange={handleChange}
+                required
+                autoFocus
+                autoComplete="username"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="login-password">
+                Password <span className="required">*</span>
+              </label>
+              <input
+                id="login-password"
+                name="password"
+                type="password"
+                className="form-control"
+                value={form.password}
+                onChange={handleChange}
+                required
+                autoComplete="current-password"
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', fontSize: '13px', color: '#4B5563' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <input type="checkbox" style={{ accentColor: '#0F5132' }} />
+                Remember me
+              </label>
+              <a href="#" style={{ color: '#0F5132', fontWeight: 600, textDecoration: 'none' }}>Forgot password?</a>
+            </div>
+
+            <button
+              type="submit"
+              className="btn-auth-primary"
+              disabled={loading}
+            >
+              {loading ? <><span className="spinner spinner-sm" /> Signing In...</> : 'Sign In →'}
+            </button>
+          </form>
+
+          <div className="auth-link">
+            Don't have an account?{' '}
+            <Link to="/register">Create Account</Link>
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary btn-lg btn-block"
-            disabled={loading}
-          >
-            {loading ? <><span className="spinner spinner-sm" /> Signing In...</> : 'Sign In'}
-          </button>
-        </form>
-
-        <div className="auth-link">
-          Don't have an account?{' '}
-          <Link to="/register">Create Account</Link>
-        </div>
-
-        <div style={{ marginTop: 24, padding: '12px 16px', background: 'var(--gray-50)', borderRadius: 6, fontSize: 12, color: 'var(--gray-500)', border: '1px solid var(--gray-200)' }}>
-          <strong>Demo Credentials</strong><br />
-          Admin: <code>admin / Demo@1234</code><br />
-          Citizen: <code>citizen1 / Demo@1234</code><br />
-          HEI: <code>hei_spoc1 / Demo@1234</code><br />
-          Faculty: <code>faculty1 / Demo@1234</code><br />
-          Industry: <code>industry1 / Demo@1234</code>
+          <div className="demo-credentials">
+            <strong>Demo Credentials</strong>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px' }}>
+              <span>Admin: <code>admin / Demo@1234</code></span>
+              <span>Citizen: <code>citizen1 / Demo@1234</code></span>
+              <span>HEI: <code>hei_spoc1 / Demo@1234</code></span>
+              <span>Faculty: <code>faculty1 / Demo@1234</code></span>
+              <span>Industry: <code>industry1 / Demo@1234</code></span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

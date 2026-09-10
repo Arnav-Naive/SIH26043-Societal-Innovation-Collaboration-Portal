@@ -7,6 +7,7 @@ import { getMyChallenges } from '../../api/challenges'
 import { getNotifications } from '../../api/auth'
 import StatusBadge from '../../components/common/StatusBadge'
 import { useAuth } from '../../context/AuthContext'
+import { useTranslation } from '../../hooks/useTranslation'
 
 function formatDate(dt) {
   if (!dt) return '—'
@@ -36,6 +37,7 @@ function StatCard({ title, value, icon, colorClass }) {
 export default function CitizenDashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [stats, setStats] = useState(null)
   const [recent, setRecent] = useState([])
   const [notifs, setNotifs] = useState([])
@@ -66,7 +68,7 @@ export default function CitizenDashboard() {
 
   return (
     <div>
-      <TopHeader title="Citizen Portal" />
+      <TopHeader title={t.citizenDashboard} />
       <div className="page-content citizen-dashboard-grid" style={{ maxWidth: 1200, margin: '0 auto', gap: '24px', alignItems: 'start' }}>
         
         {/* Left Column - Main Content */}
@@ -75,10 +77,10 @@ export default function CitizenDashboard() {
           <div className="dash-hero" style={{ background: 'linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%)', borderRadius: 16, padding: '40px 30px', color: '#fff', marginBottom: 24, display: 'flex', flexWrap: 'wrap', gap: 24, justifyContent: 'space-between', alignItems: 'center', boxShadow: 'var(--shadow-md)' }}>
             <div style={{ flex: '1 1 300px' }}>
               <h1 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 800, margin: '0 0 12px' }}>
-                Namaste, {user?.first_name || 'Citizen'} 👋
+                {t.welcome}, {user?.first_name || 'Citizen'} 👋
               </h1>
               <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.9)', margin: 0, lineHeight: 1.5, maxWidth: 500 }}>
-                Track your reported problems and help build a cleaner, smarter, stronger Jharkhand.
+                {t.trackProblems}
               </p>
             </div>
             <div>
@@ -87,33 +89,33 @@ export default function CitizenDashboard() {
                 onClick={() => navigate('/citizen/submit-challenge')}
                 style={{ background: '#fff', color: 'var(--color-primary-dark)', padding: '14px 28px', fontSize: 16, borderRadius: 8, fontWeight: 700, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
               >
-                🚀 Report a Problem
+                🚀 {t.reportProblem}
               </button>
             </div>
           </div>
 
           {/* Statistics Grid */}
           <div className="citizen-stat-grid dash-stats" style={{ gap: 16, marginBottom: 24 }}>
-            <StatCard title="Reported" value={stats?.total_challenges || 0} icon="📝" colorClass="bg-gray-100 text-gray-600" />
-            <StatCard title="Under Review" value={stats?.under_review || 0} icon="🔍" colorClass="bg-warning-light text-warning" />
-            <StatCard title="In Progress" value={stats?.in_progress || 0} icon="⚙️" colorClass="bg-primary-light text-primary" />
-            <StatCard title="Resolved" value={stats?.completed || 0} icon="✅" colorClass="bg-success-light text-success" />
+            <StatCard title={t.reported} value={stats?.total_challenges || 0} icon="📝" colorClass="bg-gray-100 text-gray-600" />
+            <StatCard title={t.underReview} value={stats?.under_review || 0} icon="🔍" colorClass="bg-warning-light text-warning" />
+            <StatCard title={t.inProgress} value={stats?.in_progress || 0} icon="⚙️" colorClass="bg-primary-light text-primary" />
+            <StatCard title={t.resolved} value={stats?.completed || 0} icon="✅" colorClass="bg-success-light text-success" />
           </div>
 
           {/* Recent Problems Detailed List */}
           <div className="card dash-recent-problems">
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span className="card-title" style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>📄</span> Recent Problems
+                <span>📄</span> {t.recentProblems}
               </span>
-              <Link to="/citizen/my-challenges" style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: 14 }}>View All →</Link>
+              <Link to="/citizen/my-challenges" style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: 14 }}>{t.viewAll} →</Link>
             </div>
             <div className="card-body" style={{ padding: 0 }}>
               {recent.length === 0 ? (
                 <div style={{ padding: 40, textAlign: 'center', color: 'var(--gray-500)' }}>
                   <div style={{ fontSize: 40, marginBottom: 16 }}>🌱</div>
-                  <h3 style={{ margin: '0 0 8px', color: 'var(--gray-900)' }}>No problems reported yet</h3>
-                  <p style={{ margin: 0 }}>Submit your first problem to start making an impact.</p>
+                  <h3 style={{ margin: '0 0 8px', color: 'var(--gray-900)' }}>{t.noProblemsYet}</h3>
+                  <p style={{ margin: 0 }}>{t.submitFirstProblem}</p>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>

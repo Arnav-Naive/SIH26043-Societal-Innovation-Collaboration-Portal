@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { getNotifications, markNotificationRead, markAllNotificationsRead } from '../../api/auth'
 import { globalSearch } from '../../api/analytics'
+import { useTranslation } from '../../hooks/useTranslation'
 
 const ROLE_LABEL = {
   citizen: 'Citizen',
@@ -15,6 +16,7 @@ const ROLE_LABEL = {
 export default function TopHeader({ title }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const [notifs, setNotifs] = useState([])
   const [showNotifs, setShowNotifs] = useState(false)
@@ -83,20 +85,18 @@ export default function TopHeader({ title }) {
             </svg>
           </button>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={() => navigate(user?.role === 'citizen' ? '/' : `/${user?.role}/dashboard`)}>
-          <div style={{ width: 32, height: 32, background: 'var(--color-primary)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 14 }}>SX</div>
-          <span className="top-header-title" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-primary-dark)' }}>SAMAdhan</span>
-            {user?.role === 'citizen' && <span className="desktop-only" style={{ fontSize: 10, color: 'var(--gray-500)', fontWeight: 500 }}>People's Problems. Academic Solutions.</span>}
-          </span>
-        </div>
+        {(!user || user.role === 'citizen') && (
+          <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/')}>
+            <img src="/images/logo.png" alt="SamadhanX Logo" style={{ height: '40px', objectFit: 'contain' }} />
+          </div>
+        )}
       </div>
 
       {user?.role === 'citizen' && (
         <nav className="desktop-only" style={{ display: 'flex', gap: '24px', alignItems: 'center', margin: '0 auto' }}>
-          <Link to="/" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>Home</Link>
-          <Link to="/citizen/submit-challenge" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>Report a Problem</Link>
-          <Link to="/citizen/my-challenges" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>My Problems</Link>
+          <Link to="/" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t.home}</Link>
+          <Link to="/citizen/submit-challenge" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t.reportProblem}</Link>
+          <Link to="/citizen/my-challenges" style={{ color: 'var(--gray-700)', fontWeight: 600, fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t.myProblems}</Link>
         </nav>
       )}
 
@@ -197,7 +197,7 @@ export default function TopHeader({ title }) {
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            Sign Out
+            {user.role === 'citizen' ? t.signOut : 'Sign Out'}
           </button>
         </div>
       )}

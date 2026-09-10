@@ -21,6 +21,7 @@ class User(AbstractUser):
     phone = models.CharField(max_length=15, blank=True)
     district = models.CharField(max_length=100, blank=True)
     organization = models.CharField(max_length=200, blank=True)
+    preferred_language = models.CharField(max_length=20, null=True, blank=True)
 
     class Meta:
         db_table = 'accounts_user'

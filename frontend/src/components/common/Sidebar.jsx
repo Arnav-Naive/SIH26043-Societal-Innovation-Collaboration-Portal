@@ -105,9 +105,8 @@ export default function Sidebar() {
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-brand">
-        <div className="sidebar-brand-name">SamadhanX</div>
-        <div className="sidebar-brand-sub">Societal Innovation Portal · SIH 26043</div>
+      <div className="sidebar-brand" style={{ display: 'flex', justifyContent: 'center', padding: '24px 16px' }}>
+        <img src="/images/logo.png" alt="SamadhanX Logo" style={{ width: '100%', maxWidth: '180px', objectFit: 'contain' }} />
       </div>
 
       <nav className="sidebar-nav">

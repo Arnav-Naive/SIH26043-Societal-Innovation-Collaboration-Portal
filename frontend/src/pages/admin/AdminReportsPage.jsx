@@ -34,33 +34,44 @@ export default function AdminReportsPage() {
       <TopHeader title="Reports & Exports" />
       
       <div className="page-content">
-        <div className="card p-6" style={{ maxWidth: '600px' }}>
-          <h2 className="text-xl font-bold mb-4">Export Data</h2>
-          <p className="text-gray-600 mb-6">Select the type of data you wish to export. The report will be downloaded as a CSV file which can be opened in Excel or converted to PDF.</p>
-          
-          {error && <div className="alert alert-error">{error}</div>}
+        <div className="page-header">
+          <h1 className="page-title">Reports & Exports</h1>
+          <p className="page-subtitle">Download system data for offline analysis.</p>
+        </div>
 
-          <div className="form-group mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
-            <select 
-              className="form-control" 
-              value={reportType}
-              onChange={(e) => setReportType(e.target.value)}
-            >
-              <option value="challenges">Problems / Challenges</option>
-              <option value="users">Users</option>
-              <option value="universities">Universities / HEIs</option>
-            </select>
+        <div className="card" style={{ maxWidth: '600px' }}>
+          <div className="card-header">
+            <span className="card-title">Export Data</span>
           </div>
+          <div className="card-body">
+            <p style={{ color: 'var(--gray-600)', marginBottom: '24px', fontSize: '14px' }}>
+              Select the type of data you wish to export. The report will be downloaded as a CSV file which can be opened in Excel or converted to PDF.
+            </p>
+            
+            {error && <div className="alert alert-error" style={{ marginBottom: '16px' }}>{error}</div>}
 
-          <div className="flex">
-            <button 
-              className="btn btn-primary w-full"
-              onClick={handleDownload}
-              disabled={downloading}
-            >
-              {downloading ? 'Generating...' : `Download ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report (CSV)`}
-            </button>
+            <div className="form-group" style={{ marginBottom: '24px' }}>
+              <label className="form-label">Report Type</label>
+              <select 
+                className="form-control" 
+                value={reportType}
+                onChange={(e) => setReportType(e.target.value)}
+              >
+                <option value="challenges">Problems / Challenges</option>
+                <option value="users">Users</option>
+                <option value="universities">Universities / HEIs</option>
+              </select>
+            </div>
+
+            <div>
+              <button 
+                className="btn btn-primary btn-block"
+                onClick={handleDownload}
+                disabled={downloading}
+              >
+                {downloading ? 'Generating...' : `Download ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report (CSV)`}
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -74,9 +74,23 @@ export default function AdminDashboard() {
     <div>
       <TopHeader title="Societal Innovation Dashboard" />
       <div className="page-content">
-        <div className="page-header">
-          <h1 className="page-title">Societal Innovation Dashboard</h1>
-          <p className="page-subtitle">
+        <div 
+          className="page-header"
+          style={{
+            backgroundImage: "linear-gradient(to right, rgba(15, 81, 50, 0.95), rgba(20, 45, 29, 0.7)), url('/images/jharkhand_bg.jpg')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center 30%',
+            padding: '48px 40px',
+            borderRadius: '16px',
+            color: 'white',
+            boxShadow: '0 12px 30px rgba(0,0,0,0.15)',
+            marginBottom: '32px'
+          }}
+        >
+          <h1 className="page-title" style={{ color: '#ffffff', fontSize: '2rem', letterSpacing: '-0.02em', textShadow: '0 4px 12px rgba(0,0,0,0.4)', marginBottom: '8px' }}>
+            Societal Innovation Dashboard
+          </h1>
+          <p className="page-subtitle" style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1.1rem', marginTop: 0, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
             Monitor problems, institutional collaboration and project progress.
           </p>
         </div>

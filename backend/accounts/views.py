@@ -123,6 +123,7 @@ class UpdateProfileView(APIView):
         if 'last_name' in data: user.last_name = data['last_name']
         if 'phone' in data: user.phone = data['phone']
         if 'organization' in data: user.organization = data['organization']
+        if 'preferred_language' in data: user.preferred_language = data['preferred_language']
 
         if 'password' in data and data['password']:
             user.set_password(data['password'])

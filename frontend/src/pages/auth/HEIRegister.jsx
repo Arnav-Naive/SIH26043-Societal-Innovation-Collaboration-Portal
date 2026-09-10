@@ -97,9 +97,8 @@ export default function HEIRegister() {
   return (
     <div className="auth-page" style={{ padding: '40px 20px' }}>
       <div className="auth-card" style={{ maxWidth: 800 }}>
-        <div className="auth-brand">
-          <div className="auth-brand-logo">S</div>
-          <div className="auth-brand-name">SamadhanX</div>
+        <div className="auth-brand" style={{ justifyContent: 'center', marginBottom: '2rem' }}>
+          <img src="/images/logo.png" alt="SamadhanX Logo" style={{ width: '100%', maxWidth: '240px', objectFit: 'contain' }} />
         </div>
 
         <h1 className="auth-form-title">University / HEI Registration</h1>

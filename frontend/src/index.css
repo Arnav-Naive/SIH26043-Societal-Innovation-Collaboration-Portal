@@ -1,3 +1,5 @@
+@import './industry.css';
+@import './auth.css';
 /* ============================================================
    SamadhanX — Global Design System
    Professional Government/Institutional UI
@@ -2036,3 +2038,10 @@ select.form-control {
 .mobile-header-hamburger {
   display: none;
 }
+
+/* Auth Split Layout */
+.split-auth-container { display: flex; min-height: 100vh; }
+.split-auth-left { flex: 1; background: var(--color-primary-dark); color: white; display: flex; flex-direction: column; justify-content: center; padding: 40px; }
+.split-auth-right { flex: 1; display: flex; align-items: center; justify-content: center; background: white; padding: 40px; }
+.auth-card { width: 100%; max-width: 440px; }
+@media (max-width: 768px) { .split-auth-container { flex-direction: column; } .split-auth-left { padding: 32px 20px; text-align: center; } }
