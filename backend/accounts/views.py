@@ -1,3 +1,4 @@
+"""FILE PATH: backend/accounts/views.py  (REPLACE EXISTING FILE)"""
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -12,7 +13,7 @@ from .models import User, Notification
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
-        
+
         if self.user.role == User.ROLE_HEI_SPOC:
             from universities.models import University
             try:
@@ -25,7 +26,23 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                     raise AuthenticationFailed(f'Registration rejected: {university.rejection_reason}')
             except University.DoesNotExist:
                 pass
-                
+
+        if self.user.role == User.ROLE_INDUSTRY:
+            from industry.models import IndustryPartner
+            try:
+                partner = IndustryPartner.objects.get(user=self.user)
+                if partner.status == IndustryPartner.STATUS_PENDING:
+                    from rest_framework.exceptions import AuthenticationFailed
+                    raise AuthenticationFailed('Account pending verification by Government Admin.')
+                elif partner.status == IndustryPartner.STATUS_REJECTED:
+                    from rest_framework.exceptions import AuthenticationFailed
+                    raise AuthenticationFailed(f'Registration rejected: {partner.rejection_reason}')
+                elif not partner.is_active:
+                    from rest_framework.exceptions import AuthenticationFailed
+                    raise AuthenticationFailed('Your industry account has been deactivated. Contact admin.')
+            except IndustryPartner.DoesNotExist:
+                pass
+
         data['user'] = UserSerializer(self.user).data
         return data
 
@@ -106,9 +123,9 @@ class UpdateProfileView(APIView):
         if 'last_name' in data: user.last_name = data['last_name']
         if 'phone' in data: user.phone = data['phone']
         if 'organization' in data: user.organization = data['organization']
-        
+
         if 'password' in data and data['password']:
             user.set_password(data['password'])
-            
+
         user.save()
         return Response(UserSerializer(user).data)
