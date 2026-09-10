@@ -18,6 +18,9 @@ export default function FormTeam() {
 
   const [form, setForm] = useState({
     faculty_mentor_id: '',
+    project_title: '',
+    objective: '',
+    domain: '',
     project_description: '',
     students: [''],
   })
@@ -49,6 +52,9 @@ export default function FormTeam() {
     try {
       const payload = {
         faculty_mentor_id: form.faculty_mentor_id || null,
+        project_title: form.project_title,
+        objective: form.objective,
+        domain: form.domain,
         project_description: form.project_description,
         students,
       }
@@ -133,14 +139,53 @@ export default function FormTeam() {
               </div>
 
               <div className="form-group">
-                <label className="form-label" htmlFor="ft-desc">Project Description</label>
+                <label className="form-label" htmlFor="ft-title">Project Title</label>
+                <input
+                  type="text"
+                  id="ft-title"
+                  className="form-control"
+                  value={form.project_title}
+                  onChange={e => setForm(f => ({ ...f, project_title: e.target.value }))}
+                  placeholder="E.g., Smart Water Monitoring System"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" htmlFor="ft-domain">Domain / Technology Focus</label>
+                <input
+                  type="text"
+                  id="ft-domain"
+                  className="form-control"
+                  value={form.domain}
+                  onChange={e => setForm(f => ({ ...f, domain: e.target.value }))}
+                  placeholder="E.g., IoT, AI/ML, CleanTech"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" htmlFor="ft-objective">Primary Objective</label>
+                <textarea
+                  id="ft-objective"
+                  className="form-control"
+                  rows={2}
+                  value={form.objective}
+                  onChange={e => setForm(f => ({ ...f, objective: e.target.value }))}
+                  placeholder="What is the main goal of this project?"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" htmlFor="ft-desc">Solution Approach / Description</label>
                 <textarea
                   id="ft-desc"
                   className="form-control"
                   rows={4}
                   value={form.project_description}
                   onChange={e => setForm(f => ({ ...f, project_description: e.target.value }))}
-                  placeholder="Describe the project approach..."
+                  placeholder="Describe the proposed technical approach and methodology..."
                 />
               </div>
 

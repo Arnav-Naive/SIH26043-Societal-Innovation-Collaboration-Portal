@@ -13,3 +13,11 @@ export const submitMilestone = (milestoneId, formData) =>
 
 export const reviewMilestone = (milestoneId, action, note) =>
   axiosClient.post(`/projects/milestones/${milestoneId}/review/`, { action, note })
+
+export const getProjectImpact = (teamId) =>
+  axiosClient.get(`/projects/teams/${teamId}/impact/`)
+
+export const submitProjectImpact = (teamId, formData) =>
+  axiosClient.post(`/projects/teams/${teamId}/impact/`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })

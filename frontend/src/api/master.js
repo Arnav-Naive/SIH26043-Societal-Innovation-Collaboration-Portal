@@ -4,6 +4,8 @@ export const getMasterData = (entity) => {
   return axiosClient.get(`/master/${entity}/`)
 }
 
+export const getDistricts = () => getMasterData('districts')
+
 export const toggleMasterDataActive = (entity, id) => {
   return axiosClient.post(`/master/${entity}/${id}/toggle_active/`)
 }

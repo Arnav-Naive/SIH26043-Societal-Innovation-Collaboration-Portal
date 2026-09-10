@@ -28,6 +28,26 @@ class University(models.Model):
         related_name='university_spoc',
         limit_choices_to={'role': 'hei_spoc'},
     )
+    STATUS_PENDING = 'PENDING'
+    STATUS_APPROVED = 'APPROVED'
+    STATUS_REJECTED = 'REJECTED'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending Verification'),
+        (STATUS_APPROVED, 'Approved'),
+        (STATUS_REJECTED, 'Rejected'),
+    ]
+
+    institution_type = models.CharField(max_length=50, blank=True)
+    registration_id = models.CharField(max_length=100, blank=True)
+    address = models.TextField(blank=True)
+    designation = models.CharField(max_length=100, blank=True)
+    departments = models.TextField(blank=True, help_text="Comma separated list of departments/disciplines")
+    facilities = models.TextField(blank=True, help_text="Innovation/incubation facilities")
+    verification_document = models.FileField(upload_to='hei_verifications/', blank=True, null=True)
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    rejection_reason = models.TextField(blank=True)
+
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -74,6 +94,9 @@ class ProjectTeam(models.Model):
         limit_choices_to={'role': 'faculty_mentor'},
     )
     students = models.JSONField(default=list, help_text='List of student name strings')
+    project_title = models.CharField(max_length=300, blank=True)
+    objective = models.TextField(blank=True)
+    domain = models.CharField(max_length=100, blank=True)
     project_description = models.TextField(blank=True)
     stage = models.CharField(max_length=20, choices=STAGE_CHOICES, default=STAGE_FORMED)
     created_at = models.DateTimeField(auto_now_add=True)

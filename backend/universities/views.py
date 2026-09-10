@@ -62,6 +62,94 @@ class HEIAssignedChallengesView(APIView):
         return Response(serializer.data)
 
 
+class HEIDashboardStatsView(APIView):
+    """Stats for the HEI SPOC dashboard."""
+    permission_classes = [IsHEISPOC]
+
+    def get(self, request):
+        try:
+            university = University.objects.get(spoc=request.user)
+        except University.DoesNotExist:
+            return Response({'detail': 'No university linked to your account.'}, status=404)
+
+        assigned_challenges_count = Challenge.objects.filter(
+            assigned_university=university,
+            status=Challenge.STATUS_ROUTED
+        ).count()
+
+        accepted_challenges_count = Challenge.objects.filter(
+            assigned_university=university,
+            status=Challenge.STATUS_ACCEPTED
+        ).count()
+
+        active_projects_count = ProjectTeam.objects.filter(
+            university=university
+        ).exclude(stage=ProjectTeam.STAGE_IMPACT).count()
+
+        completed_projects_count = ProjectTeam.objects.filter(
+            university=university,
+            stage=ProjectTeam.STAGE_IMPACT
+        ).count()
+
+        return Response({
+            'assigned_challenges': assigned_challenges_count,
+            'accepted_challenges': accepted_challenges_count,
+            'active_projects': active_projects_count,
+            'completed_projects': completed_projects_count,
+            'total_challenges': assigned_challenges_count + accepted_challenges_count,
+            'total_projects': active_projects_count + completed_projects_count
+        })
+
+
+
+
+class HEIChallengeActionView(APIView):
+    """HEI SPOC can accept or reject an assigned challenge."""
+    permission_classes = [IsHEISPOC]
+
+    def post(self, request, challenge_id):
+        try:
+            university = University.objects.get(spoc=request.user)
+            challenge = Challenge.objects.get(pk=challenge_id, assigned_university=university)
+        except (University.DoesNotExist, Challenge.DoesNotExist):
+            return Response({'detail': 'Challenge not found or not assigned to you.'}, status=404)
+
+        action = request.data.get('action')
+        reason = request.data.get('reason', '')
+
+        if action == 'accept':
+            if challenge.status != Challenge.STATUS_ROUTED:
+                return Response({'detail': 'Challenge is not in ROUTED state.'}, status=400)
+            challenge.status = Challenge.STATUS_ACCEPTED
+            challenge.save()
+            ChallengeStatusHistory.objects.create(
+                challenge=challenge,
+                status=Challenge.STATUS_ACCEPTED,
+                changed_by=request.user,
+                note='Challenge accepted by HEI.'
+            )
+            return Response({'detail': 'Challenge accepted.'})
+
+        elif action == 'reject':
+            if challenge.status != Challenge.STATUS_ROUTED:
+                return Response({'detail': 'Challenge is not in ROUTED state.'}, status=400)
+            if not reason:
+                return Response({'detail': 'Reason is required for rejection.'}, status=400)
+            challenge.status = Challenge.STATUS_REJECTED
+            challenge.save()
+            ChallengeStatusHistory.objects.create(
+                challenge=challenge,
+                status=Challenge.STATUS_REJECTED,
+                changed_by=request.user,
+                note=f'Challenge rejected by HEI. Reason: {reason}'
+            )
+            return Response({'detail': 'Challenge rejected.'})
+
+        return Response({'detail': 'Invalid action.'}, status=400)
+
+
+
+
 class FormTeamView(APIView):
     """HEI SPOC forms a project team for an assigned challenge."""
     permission_classes = [IsHEISPOC]
@@ -94,6 +182,9 @@ class FormTeamView(APIView):
                 return Response({'detail': 'Faculty mentor not found.'}, status=404)
 
         students = request.data.get('students', [])
+        project_title = request.data.get('project_title', '')
+        objective = request.data.get('objective', '')
+        domain = request.data.get('domain', '')
         project_description = request.data.get('project_description', '')
 
         team = ProjectTeam.objects.create(
@@ -101,6 +192,9 @@ class FormTeamView(APIView):
             university=university,
             faculty_mentor=faculty,
             students=students,
+            project_title=project_title,
+            objective=objective,
+            domain=domain,
             project_description=project_description,
             stage=ProjectTeam.STAGE_FORMED,
         )
@@ -156,7 +250,7 @@ class ProjectTeamDetailView(generics.RetrieveUpdateAPIView):
     def update(self, request, *args, **kwargs):
         """HEI SPOC can update stage and description."""
         instance = self.get_object()
-        allowed_fields = ('stage', 'project_description', 'students', 'faculty_mentor_id')
+        allowed_fields = ('stage', 'project_title', 'objective', 'domain', 'project_description', 'students', 'faculty_mentor_id')
         data = {k: v for k, v in request.data.items() if k in allowed_fields}
         serializer = self.get_serializer(instance, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -174,3 +268,114 @@ class FacultyListView(generics.ListAPIView):
         faculties = User.objects.filter(role='faculty_mentor')
         serializer = UserSerializer(faculties, many=True)
         return Response(serializer.data)
+
+
+from rest_framework.permissions import AllowAny
+from django.db import transaction
+
+class HEIRegistrationView(APIView):
+    """Public endpoint to register a new HEI and SPOC account."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        data = request.data
+        from accounts.models import User
+        from master_data.models import District
+
+        try:
+            district = District.objects.get(name=data.get('district', ''))
+        except District.DoesNotExist:
+            return Response({'detail': 'Invalid district provided.'}, status=400)
+
+        if User.objects.filter(username=data.get('username')).exists():
+            return Response({'detail': 'Username already exists.'}, status=400)
+        
+        if User.objects.filter(email=data.get('email')).exists():
+            return Response({'detail': 'Email already exists.'}, status=400)
+
+        try:
+            with transaction.atomic():
+                user = User.objects.create_user(
+                    username=data.get('username'),
+                    email=data.get('email'),
+                    password=data.get('password'),
+                    first_name=data.get('first_name', ''),
+                    last_name=data.get('last_name', ''),
+                    role=User.ROLE_HEI_SPOC,
+                    phone=data.get('phone', ''),
+                    district=district.name,
+                    organization=data.get('name', '')
+                )
+                
+                university = University.objects.create(
+                    name=data.get('name'),
+                    institution_type=data.get('institution_type', ''),
+                    registration_id=data.get('registration_id', ''),
+                    address=data.get('address', ''),
+                    district=district,
+                    state=data.get('state', 'Jharkhand'),
+                    website=data.get('website', ''),
+                    contact_email=data.get('email', ''),
+                    contact_phone=data.get('phone', ''),
+                    designation=data.get('designation', ''),
+                    departments=data.get('departments', ''),
+                    facilities=data.get('facilities', ''),
+                    spoc=user,
+                    status=University.STATUS_PENDING,
+                    is_active=False
+                )
+
+                if 'verification_document' in request.FILES:
+                    university.verification_document = request.FILES['verification_document']
+                    university.save()
+
+            return Response({'detail': 'Registration successful. Pending admin approval.'}, status=201)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=400)
+
+
+class AdminHEIApprovalView(generics.ListAPIView):
+    """Admin view to list pending HEI applications and approve/reject them."""
+    permission_classes = [IsGovAdmin]
+    
+    def get_queryset(self):
+        from .serializers import AdminHEIApprovalSerializer
+        return University.objects.filter(status=University.STATUS_PENDING).select_related('spoc', 'district')
+        
+    def get(self, request, *args, **kwargs):
+        from .serializers import AdminHEIApprovalSerializer
+        queryset = self.get_queryset()
+        serializer = AdminHEIApprovalSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+class AdminHEIActionView(APIView):
+    permission_classes = [IsGovAdmin]
+
+    def post(self, request, pk):
+        try:
+            university = University.objects.get(pk=pk, status=University.STATUS_PENDING)
+        except University.DoesNotExist:
+            return Response({'detail': 'Pending HEI not found.'}, status=404)
+
+        action = request.data.get('action')
+        reason = request.data.get('reason', '')
+
+        if action == 'approve':
+            university.status = University.STATUS_APPROVED
+            university.is_active = True
+            university.save()
+            # Also ensure the linked SPOC user account is active
+            if university.spoc:
+                university.spoc.is_active = True
+                university.spoc.save(update_fields=['is_active'])
+            return Response({'detail': 'HEI Approved.'})
+            
+        elif action == 'reject':
+            if not reason:
+                return Response({'detail': 'Reason required for rejection.'}, status=400)
+            university.status = University.STATUS_REJECTED
+            university.rejection_reason = reason
+            university.save()
+            return Response({'detail': 'HEI Rejected.'})
+
+        return Response({'detail': 'Invalid action.'}, status=400)

@@ -14,3 +14,6 @@ urlpatterns = [
     path('api/analytics/', include('analytics.urls')),
     path('api/master/', include('master_data.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+handler404 = 'config.views.handler404'
+handler500 = 'config.views.handler500'

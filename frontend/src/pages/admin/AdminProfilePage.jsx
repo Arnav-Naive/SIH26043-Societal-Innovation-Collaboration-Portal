@@ -5,6 +5,7 @@ import TopHeader from '../../components/common/TopHeader'
 import LoadingPage from '../../components/common/LoadingPage'
 import { useAuth } from '../../context/AuthContext'
 
+
 export default function AdminProfilePage() {
   const [profile, setProfile] = useState({
     first_name: '',
@@ -15,11 +16,11 @@ export default function AdminProfilePage() {
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const { logout } = useAuth()
+  const navigate = useNavigate()
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  const { logout } = useAuth()
-  const navigate = useNavigate()
 
   useEffect(() => {
     fetchProfile()
@@ -150,7 +151,15 @@ export default function AdminProfilePage() {
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24 }}>
+            <button 
+              type="button" 
+              className="btn" 
+              onClick={async () => { await logout(); navigate('/login') }}
+              style={{ background: 'var(--danger-bg)', color: 'var(--color-danger)' }}
+            >
+              Sign Out
+            </button>
             <button type="submit" className="btn btn-primary" disabled={saving}>
               {saving ? 'Saving...' : 'Update Profile'}
             </button>

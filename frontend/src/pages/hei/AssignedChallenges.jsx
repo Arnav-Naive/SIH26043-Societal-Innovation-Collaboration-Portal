@@ -66,6 +66,10 @@ export default function AssignedChallenges() {
                 <div className="summary-card-value">{challenges.filter(c => c.status === 'ROUTED').length}</div>
               </div>
               <div className="summary-card">
+                <div className="summary-card-label">Accepted (Needs Team)</div>
+                <div className="summary-card-value">{challenges.filter(c => c.status === 'ACCEPTED').length}</div>
+              </div>
+              <div className="summary-card">
                 <div className="summary-card-label">In Progress</div>
                 <div className="summary-card-value">{challenges.filter(c => c.status === 'IN_PROGRESS').length}</div>
               </div>
@@ -110,7 +114,7 @@ export default function AssignedChallenges() {
                             >
                               View
                             </button>
-                            {ch.status === 'ROUTED' && (
+                            {ch.status === 'ACCEPTED' && (
                               <button
                                 className="btn btn-primary btn-sm"
                                 onClick={() => navigate(`/hei/challenges/${ch.id}/form-team`)}

@@ -67,12 +67,12 @@ export default function CitizenDashboard() {
   return (
     <div>
       <TopHeader title="Citizen Portal" />
-      <div className="page-content" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: '24px', alignItems: 'start' }}>
+      <div className="page-content citizen-dashboard-grid" style={{ maxWidth: 1200, margin: '0 auto', gap: '24px', alignItems: 'start' }}>
         
         {/* Left Column - Main Content */}
-        <div>
+        <div className="dashboard-col-left">
           {/* Welcome & Primary CTA */}
-          <div style={{ background: 'linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%)', borderRadius: 16, padding: '40px 30px', color: '#fff', marginBottom: 24, display: 'flex', flexWrap: 'wrap', gap: 24, justifyContent: 'space-between', alignItems: 'center', boxShadow: 'var(--shadow-md)' }}>
+          <div className="dash-hero" style={{ background: 'linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%)', borderRadius: 16, padding: '40px 30px', color: '#fff', marginBottom: 24, display: 'flex', flexWrap: 'wrap', gap: 24, justifyContent: 'space-between', alignItems: 'center', boxShadow: 'var(--shadow-md)' }}>
             <div style={{ flex: '1 1 300px' }}>
               <h1 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 800, margin: '0 0 12px' }}>
                 Namaste, {user?.first_name || 'Citizen'} 👋
@@ -93,7 +93,7 @@ export default function CitizenDashboard() {
           </div>
 
           {/* Statistics Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 24 }}>
+          <div className="citizen-stat-grid dash-stats" style={{ gap: 16, marginBottom: 24 }}>
             <StatCard title="Reported" value={stats?.total_challenges || 0} icon="📝" colorClass="bg-gray-100 text-gray-600" />
             <StatCard title="Under Review" value={stats?.under_review || 0} icon="🔍" colorClass="bg-warning-light text-warning" />
             <StatCard title="In Progress" value={stats?.in_progress || 0} icon="⚙️" colorClass="bg-primary-light text-primary" />
@@ -101,7 +101,7 @@ export default function CitizenDashboard() {
           </div>
 
           {/* Recent Problems Detailed List */}
-          <div className="card">
+          <div className="card dash-recent-problems">
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span className="card-title" style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span>📄</span> Recent Problems
@@ -121,25 +121,21 @@ export default function CitizenDashboard() {
                     <div
                       key={ch.id}
                       onClick={() => navigate(`/citizen/challenges/${ch.id}`)}
+                      className="recent-problem-row hover-bg-gray-50"
                       style={{ 
                         padding: '16px 20px', 
                         borderBottom: idx === recent.length - 1 ? 'none' : '1px solid var(--border-color)',
-                        display: 'grid',
-                        gridTemplateColumns: '80px 1fr auto auto',
-                        gap: 20,
-                        alignItems: 'center',
                         cursor: 'pointer'
                       }}
-                      className="hover-bg-gray-50"
                     >
-                      <div style={{ width: 80, height: 60, borderRadius: 8, background: 'var(--gray-200)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                      <div className="recent-problem-img" style={{ borderRadius: 8, background: 'var(--gray-200)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                         {ch.media && ch.media.length > 0 && ch.media[0].media_type === 'image' ? (
                           <img src={ch.media[0].file_url || ch.media[0].file} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
                           <span style={{ fontSize: 24, color: 'var(--gray-400)' }}>📷</span>
                         )}
                       </div>
-                      <div>
+                      <div className="recent-problem-info">
                         <div style={{ fontWeight: 600, color: 'var(--gray-900)', fontSize: 15, marginBottom: 4 }}>{ch.title}</div>
                         <div style={{ fontSize: 13, color: 'var(--gray-500)', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                           <span style={{ fontFamily: 'monospace' }}>{ch.reference_id}</span>
@@ -147,11 +143,11 @@ export default function CitizenDashboard() {
                           {ch.district && <span>• 📍 {ch.district}</span>}
                         </div>
                       </div>
-                      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <div className="recent-problem-meta" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                         <StatusBadge value={ch.priority} />
                         <span style={{ color: 'var(--gray-400)', fontSize: 13 }}>📅 {formatDate(ch.created_at)}</span>
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+                      <div className="recent-problem-action" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
                         <StatusBadge value={ch.status} />
                         <span style={{ color: 'var(--color-primary)', fontSize: 13, fontWeight: 600 }}>View Details →</span>
                       </div>
@@ -164,9 +160,9 @@ export default function CitizenDashboard() {
         </div>
 
         {/* Right Column - Sidebar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div className="dashboard-col-right" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           
-          <div className="card" style={{ padding: 24, background: 'var(--bg-page)', border: '1px solid var(--border-color)' }}>
+          <div className="card dash-quote" style={{ padding: 24, background: 'var(--bg-page)', border: '1px solid var(--border-color)' }}>
             <h3 style={{ margin: '0 0 16px', fontSize: 14, color: 'var(--gray-600)', fontStyle: 'italic', fontWeight: 500, lineHeight: 1.5 }}>
               "Your voice can create real change."
             </h3>
@@ -181,7 +177,7 @@ export default function CitizenDashboard() {
             </div>
           </div>
 
-          <div className="card">
+          <div className="card dash-quick-actions">
             <div className="card-header"><span className="card-title" style={{ fontSize: 16 }}>🧭 Quick Actions</span></div>
             <div className="card-body" style={{ padding: '8px 16px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -189,9 +185,6 @@ export default function CitizenDashboard() {
                   <span style={{ width: 24, display: 'inline-block' }}>➕</span> Report a Problem
                 </Link>
                 <Link to="/citizen/my-challenges" className="btn btn-ghost" style={{ justifyContent: 'flex-start', background: 'var(--success-light)', color: 'var(--color-success-dark)' }}>
-                  <span style={{ width: 24, display: 'inline-block' }}>🔍</span> Track Your Issue
-                </Link>
-                <Link to="/citizen/my-challenges" className="btn btn-ghost" style={{ justifyContent: 'flex-start', background: 'var(--gray-100)', color: 'var(--gray-800)' }}>
                   <span style={{ width: 24, display: 'inline-block' }}>📋</span> View My Problems
                 </Link>
                 <Link to="/citizen/profile" className="btn btn-ghost" style={{ justifyContent: 'flex-start', background: 'var(--warning-light)', color: 'var(--color-warning-dark)' }}>
@@ -201,7 +194,7 @@ export default function CitizenDashboard() {
             </div>
           </div>
 
-          <div className="card">
+          <div className="card dash-latest-updates">
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span className="card-title" style={{ fontSize: 16 }}>🔔 Latest Updates</span>
             </div>

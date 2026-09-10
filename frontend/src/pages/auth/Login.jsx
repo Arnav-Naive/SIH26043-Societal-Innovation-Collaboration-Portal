@@ -3,9 +3,9 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 const ROLE_REDIRECTS = {
-  citizen: '/citizen/my-challenges',
+  citizen: '/citizen/dashboard',
   gov_admin: '/admin/dashboard',
-  hei_spoc: '/hei/assigned-challenges',
+  hei_spoc: '/hei/dashboard',
   faculty_mentor: '/faculty/my-teams',
   industry_partner: '/industry/browse-projects',
 }
@@ -33,11 +33,15 @@ export default function Login() {
         navigate(ROLE_REDIRECTS[user.role] || '/citizen/my-challenges')
       }
     } catch (err) {
-      setError(
-        err.response?.data?.detail ||
-        err.response?.data?.non_field_errors?.[0] ||
-        'Login failed. Please check your credentials.'
-      )
+      // Extract error message from DRF response (multiple possible formats)
+      const data = err.response?.data
+      const msg =
+        data?.detail ||
+        data?.non_field_errors?.[0] ||
+        (typeof data === 'string' ? data : null) ||
+        (err.response ? `Login failed (${err.response.status}). Please check your credentials.` : null) ||
+        'Unable to connect to the server. Please try again.'
+      setError(msg)
     } finally {
       setLoading(false)
     }

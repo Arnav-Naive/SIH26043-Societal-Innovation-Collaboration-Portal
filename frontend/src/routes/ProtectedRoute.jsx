@@ -15,13 +15,10 @@ export function ProtectedRoute({ children, allowedRoles }) {
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', flexDirection: 'column', gap: 16 }}>
-        <div style={{ fontSize: 40 }}>🚫</div>
-        <h2 style={{ fontSize: 20, color: 'var(--gray-700)' }}>Access Restricted</h2>
-        <p style={{ color: 'var(--gray-500)', fontSize: 14 }}>
-          You do not have permission to access this page.
-        </p>
-        <Navigate to={getRoleHome(user.role)} replace />
+      <div style={{ padding: 40, textAlign: 'center' }}>
+        <h2>Access Restricted</h2>
+        <p>You do not have permission to view this page.</p>
+        <button onClick={() => window.location.href = getRoleHome(user.role)} className="btn btn-primary">Go to My Dashboard</button>
       </div>
     )
   }

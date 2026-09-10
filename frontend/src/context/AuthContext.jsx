@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { flushSync } from 'react-dom'
 import { login as apiLogin, logout as apiLogout, register as apiRegister } from '../api/auth'
 
 const AuthContext = createContext(null)
@@ -25,7 +26,11 @@ export function AuthProvider({ children }) {
     localStorage.setItem('access_token', data.access)
     localStorage.setItem('refresh_token', data.refresh)
     localStorage.setItem('user', JSON.stringify(data.user))
-    setUser(data.user)
+    // flushSync forces React to apply the state update NOW (synchronously),
+    // before login() returns. This prevents the race condition where navigate()
+    // fires before ProtectedRoute sees the new user — which caused the login
+    // page to flash back immediately after a successful login.
+    flushSync(() => setUser(data.user))
     return data.user
   }
 
