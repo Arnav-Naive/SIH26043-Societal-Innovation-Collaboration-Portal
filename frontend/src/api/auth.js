@@ -1,7 +1,7 @@
 import axiosClient from './axiosClient'
 import axios from 'axios'
 
-const baseURL = import.meta.env.VITE_API_URL || '/api'
+const baseURL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 export const login = (credentials) =>
   axios.post(`${baseURL}/auth/login/`, credentials)

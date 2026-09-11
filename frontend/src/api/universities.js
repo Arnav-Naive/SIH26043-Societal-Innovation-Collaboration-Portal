@@ -32,7 +32,7 @@ export const registerHEI = (data) => {
   // Use plain axios (not axiosClient) for this public endpoint.
   // axiosClient adds auth headers and has a 401→redirect interceptor
   // that can interfere with unauthenticated registration calls.
-  const baseURL = import.meta.env.VITE_API_URL || '/api'
+  const baseURL = import.meta.env.VITE_API_BASE_URL || '/api'
   return axios.post(`${baseURL}/universities/register/`, data, {
     headers: { 'Content-Type': 'multipart/form-data' }
   })
