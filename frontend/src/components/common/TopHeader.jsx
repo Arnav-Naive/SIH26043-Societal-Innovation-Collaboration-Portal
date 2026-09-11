@@ -86,8 +86,9 @@ export default function TopHeader({ title }) {
           </button>
         )}
         {(!user || user.role === 'citizen') && (
-          <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/')}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={() => navigate(user?.role === 'citizen' ? '/' : (user?.role === 'gov_admin' ? '/admin/dashboard' : user?.role === 'industry_partner' ? '/industry/dashboard' : user?.role === 'faculty_mentor' ? '/faculty/my-teams' : '/hei/dashboard'))}>
             <img src="/images/logo.png" alt="SamadhanX Logo" style={{ height: '40px', objectFit: 'contain' }} />
+            <div style={{ fontSize: '20px', fontWeight: 700, color: '#333', letterSpacing: '-0.5px' }}>{title || 'Dashboard'}</div>
           </div>
         )}
       </div>
@@ -190,7 +191,7 @@ export default function TopHeader({ title }) {
             style={{ color: 'var(--color-danger)', padding: '6px 12px', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}
             onClick={async () => {
               await logout()
-              navigate('/login')
+              navigate('/')
             }}
             title="Sign Out"
           >

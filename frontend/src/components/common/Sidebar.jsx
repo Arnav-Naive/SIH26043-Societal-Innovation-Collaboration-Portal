@@ -48,6 +48,7 @@ const NAV_ITEMS = {
     { to: '/faculty/my-teams', label: 'My Teams', icon: '👥' },
   ],
   industry_partner: [
+    { to: '/industry/dashboard', label: 'Dashboard', icon: '🏠' },
     { to: '/industry/browse-projects', label: 'Browse Projects', icon: '🔍' },
     { to: '/industry/partnerships', label: 'My Partnerships', icon: '🤝' },
     { to: '/industry/impact', label: 'Impact Summary', icon: '📈' },

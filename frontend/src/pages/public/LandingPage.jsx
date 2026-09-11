@@ -27,7 +27,7 @@ export default function LandingPage() {
           <a href="#how-it-works" className="desktop-only" style={{ color: 'var(--gray-600)', fontWeight: 500, fontSize: 14 }}>How It Works</a>
           <a href="#impact" className="desktop-only" style={{ color: 'var(--gray-600)', fontWeight: 500, fontSize: 14 }}>Impact</a>
           {user ? (
-            <Link to={user.role === 'citizen' ? '/citizen/dashboard' : `/${user.role}/dashboard`} className="btn btn-primary btn-sm" style={{ padding: '8px 16px' }}>
+            <Link to={user.role === 'citizen' ? '/citizen/dashboard' : (user.role === 'gov_admin' ? '/admin/dashboard' : user.role === 'industry_partner' ? '/industry/dashboard' : user.role === 'faculty_mentor' ? '/faculty/my-teams' : '/hei/dashboard')} className="btn btn-primary btn-sm" style={{ padding: '8px 16px' }}>
               Go to Dashboard
             </Link>
           ) : (

@@ -7,7 +7,7 @@ const ROLE_REDIRECTS = {
   gov_admin: '/admin/dashboard',
   hei_spoc: '/hei/dashboard',
   faculty_mentor: '/faculty/my-teams',
-  industry_partner: '/industry/browse-projects',
+  industry_partner: '/industry/dashboard',
 }
 
 export default function Login() {
