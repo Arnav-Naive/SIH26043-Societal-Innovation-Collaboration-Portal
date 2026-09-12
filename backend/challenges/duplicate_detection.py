@@ -31,7 +31,14 @@ def get_embedding_model():
     if _embedding_model is None:
         logger.info("Loading sentence-transformer model 'all-MiniLM-L6-v2'...")
         from sentence_transformers import SentenceTransformer
-        _embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+        import os
+        try:
+            os.environ['HF_HUB_OFFLINE'] = '1'
+            _embedding_model = SentenceTransformer('all-MiniLM-L6-v2', local_files_only=True)
+        except Exception:
+            os.environ['HF_HUB_OFFLINE'] = '0'
+            _embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+            os.environ['HF_HUB_OFFLINE'] = '1'
         logger.info("Sentence-transformer model loaded successfully.")
     return _embedding_model
 

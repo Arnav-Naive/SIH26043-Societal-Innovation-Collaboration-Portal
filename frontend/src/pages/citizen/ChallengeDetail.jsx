@@ -66,6 +66,18 @@ export default function ChallengeDetail() {
 
   useEffect(() => { loadData() }, [id])
 
+  useEffect(() => {
+    let interval;
+    if (challenge?.classification_source === 'pending') {
+      interval = setInterval(() => {
+        getChallengeDetail(id).then(({ data }) => setChallenge(data))
+      }, 3000)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [id, challenge?.classification_source])
+
   const handleFeedback = async (action, comments) => {
     setFeedbackSubmitting(true)
     setFeedbackError('')

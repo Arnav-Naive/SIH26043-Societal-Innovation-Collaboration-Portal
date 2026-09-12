@@ -163,7 +163,7 @@ class ChallengeSubmitView(APIView):
             category_reason=cat_result.get('reason', ''),
             priority=initial_priority,
             status=Challenge.STATUS_SUBMITTED,
-            classification_source='keyword',
+            classification_source='pending',
         )
 
         # Handle uploaded media files
@@ -184,15 +184,26 @@ class ChallengeSubmitView(APIView):
             note='Challenge submitted by citizen.',
         )
 
-        # ── Run AI pipeline (async-safe: errors never bubble up) ──
-        run_ai_pipeline(challenge)
+        # ── Run AI pipeline in background thread ──
+        import threading
+        def background_processing(challenge_id):
+            from django.db import connection
+            from challenges.models import Challenge
+            from challenges.views import run_ai_pipeline
+            from challenges.duplicate_detection import detect_duplicates
+            
+            try:
+                challenge_obj = Challenge.objects.get(pk=challenge_id)
+                run_ai_pipeline(challenge_obj)
+                challenge_obj.refresh_from_db()
+                detect_duplicates(challenge_obj)
+            except Exception as e:
+                logger.error("Background AI processing failed for challenge %s: %s", challenge_id, e)
+            finally:
+                connection.close()
 
-        # Refresh from DB to get AI-updated fields
-        challenge.refresh_from_db()
-
-        # ── Run duplicate detection (needs category to be set first) ──
-        from .duplicate_detection import detect_duplicates
-        detect_duplicates(challenge)
+        thread = threading.Thread(target=background_processing, args=(challenge.pk,))
+        thread.start()
 
         return Response(
             ChallengeDetailSerializer(challenge, context={'request': request}).data,

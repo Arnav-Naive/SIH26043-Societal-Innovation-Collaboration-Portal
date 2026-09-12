@@ -85,6 +85,7 @@ class Command(BaseCommand):
 
     def _seed_universities(self):
         from universities.models import University
+        from master_data.models import District, ExpertiseArea
 
         unis_data = [
             {
@@ -94,6 +95,13 @@ class Command(BaseCommand):
                 'expertise_areas': ['Water', 'Infrastructure', 'Environment'],
                 'contact_email': 'contact@bitrh.ac.in',
                 'spoc_username': 'hei_spoc1',
+            },
+            {
+                'name': 'Demo Ranchi University',
+                'district': 'Ranchi',
+                'state': 'Jharkhand',
+                'expertise_areas': ['Water', 'Infrastructure', 'Environment', 'Agriculture'],
+                'contact_email': 'contact@demoranchi.ac.in',
             },
             {
                 'name': 'National Institute of Technology, Jamshedpur',
@@ -114,13 +122,34 @@ class Command(BaseCommand):
         self.universities = {}
         for data in unis_data:
             spoc_username = data.pop('spoc_username', None)
-            spoc = self.users.get(spoc_username)
+            spoc = self.users.get(spoc_username) if spoc_username else None
+            
+            district_name = data.pop('district')
+            district, _ = District.objects.get_or_create(name=district_name)
+            
+            expertise_areas_names = data.pop('expertise_areas', [])
+            
             uni, created = University.objects.get_or_create(
                 name=data['name'],
-                defaults={**data, 'spoc': spoc}
+                defaults={**data, 'spoc': spoc, 'district': district}
             )
+            
+            # Ensure expertise areas are created and assigned properly
+            areas = []
+            for area_name in expertise_areas_names:
+                area, _ = ExpertiseArea.objects.get_or_create(name=area_name)
+                areas.append(area)
+            uni.expertise_areas.set(areas)
+
             if created:
                 self.stdout.write(f'  Created university: {uni.name}')
+            else:
+                # Update existing universities to have the proper district and expertise areas
+                uni.district = district
+                if spoc:
+                    uni.spoc = spoc
+                uni.save()
+            
             self.universities[uni.name] = uni
 
     def _seed_challenges(self):

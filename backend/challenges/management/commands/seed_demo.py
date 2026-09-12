@@ -2,7 +2,7 @@ import datetime
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from accounts.models import User
-from master_data.models import Category, District
+from master_data.models import Category, District, ExpertiseArea
 from universities.models import University, ProjectTeam
 from industry.models import IndustryPartner, Partnership
 from challenges.models import Challenge, ProblemTwin
@@ -57,6 +57,14 @@ class Command(BaseCommand):
         u1, _ = University.objects.get_or_create(name='Demo Ranchi University', spoc=spocs[0], district=dist_ranchi, defaults={'status': University.STATUS_APPROVED})
         u2, _ = University.objects.get_or_create(name='Demo Dhanbad Tech', spoc=spocs[1], district=dist_dhanbad, defaults={'status': University.STATUS_APPROVED})
         u3, _ = University.objects.get_or_create(name='Demo Singhbhum College', spoc=spocs[2], district=dist_singh, defaults={'status': University.STATUS_APPROVED})
+        
+        ea1, _ = ExpertiseArea.objects.get_or_create(name="Civil Engineering")
+        ea2, _ = ExpertiseArea.objects.get_or_create(name="Public Health")
+        ea3, _ = ExpertiseArea.objects.get_or_create(name="Information Technology")
+        
+        u1.expertise_areas.set([ea1, ea2])
+        u2.expertise_areas.set([ea1, ea3])
+        u3.expertise_areas.set([ea2, ea3])
         
         partner, _ = IndustryPartner.objects.get_or_create(user=ind, company_name='Demo Steel Corp', defaults={'status': IndustryPartner.STATUS_APPROVED})
         
