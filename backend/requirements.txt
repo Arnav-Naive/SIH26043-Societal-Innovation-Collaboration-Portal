@@ -1,3 +1,5 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
 Django>=5.0,<6.0
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.1
@@ -7,9 +9,7 @@ python-decouple==3.8
 dj-database-url==2.2.0
 langdetect==1.0.9
 deep-translator==1.11.4
-# Optional: enable Gemini AI provider (set AI_PROVIDER=gemini in .env)
 google-generativeai>=0.7.0
-# Semantic duplicate detection
 sentence-transformers>=2.2.0
 numpy>=1.24.0
 openpyxl>=3.1.2
