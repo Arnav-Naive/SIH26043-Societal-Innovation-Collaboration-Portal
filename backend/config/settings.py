@@ -132,13 +132,13 @@ CORS_ALLOW_CREDENTIALS = True
 # Example .env:
 #   AI_PROVIDER=gemini
 #   GEMINI_API_KEY=your-api-key-here
-#   GEMINI_MODEL=gemini-1.5-flash
+#   GEMINI_MODEL=gemini-3.6-flash
 #   AI_TIMEOUT_SECONDS=10
 
 AI_PROVIDER = config('AI_PROVIDER', default='keyword')
 GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
-GEMINI_MODEL = config('GEMINI_MODEL', default='gemini-1.5-flash')
-AI_TIMEOUT_SECONDS = config('AI_TIMEOUT_SECONDS', default=10, cast=int)
+GEMINI_MODEL = config('GEMINI_MODEL', default='gemini-3.6-flash')
+AI_TIMEOUT_SECONDS = config('AI_TIMEOUT_SECONDS', default=20, cast=int)
 
 # ─── Semantic Duplicate Detection ────────────────────────────────────────────
 SIMILARITY_THRESHOLD = 0.80  # Cosine similarity above this triggers a DuplicateFlag

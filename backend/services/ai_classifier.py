@@ -43,7 +43,7 @@ def _classify_with_gemini(title: str, description: str, district: str, categorie
 
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(
-        model_name=getattr(settings, 'GEMINI_MODEL', 'gemini-1.5-flash'),
+        model_name=getattr(settings, 'GEMINI_MODEL', 'gemini-3.6-flash'),
         generation_config={"temperature": 0.1, "max_output_tokens": 1024},
     )
 

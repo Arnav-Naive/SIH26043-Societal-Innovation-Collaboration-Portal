@@ -137,13 +137,13 @@ export default function Login() {
           </div>
 
           <div className="demo-credentials">
-            <strong>Demo Credentials</strong>
+            {/* <strong>Demo Credentials</strong> */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px' }}>
-              <span>Admin: <code>admin / Demo@1234</code></span>
+              {/* <span>Admin: <code>admin / Demo@1234</code></span>
               <span>Citizen: <code>citizen1 / Demo@1234</code></span>
               <span>HEI: <code>hei_spoc1 / Demo@1234</code></span>
               <span>Faculty: <code>faculty1 / Demo@1234</code></span>
-              <span>Industry: <code>industry1 / Demo@1234</code></span>
+              <span>Industry: <code>industry1 / Demo@1234</code></span> */}
             </div>
           </div>
         </div>

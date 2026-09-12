@@ -373,7 +373,7 @@ class ExportReportView(APIView):
                     str(c.id), c.reference_id, c.title[:50], 
                     c.category.name if c.category else 'N/A',
                     c.district.name if c.district else 'N/A',
-                    c.status, c.priority_level
+                    c.status, c.priority
                 ])
         elif report_type == 'users':
             headers = ['ID', 'Username', 'Email', 'Role', 'Status', 'Joined Date']

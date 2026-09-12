@@ -1,5 +1,6 @@
 import logging
 from django.utils import timezone
+from datetime import timedelta
 from django.conf import settings
 from django.db.models import Count
 
@@ -24,8 +25,8 @@ def _generate_twin_metadata(challenges: list) -> dict:
 
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel(
-            model_name=getattr(settings, 'GEMINI_MODEL', 'gemini-1.5-flash'),
-            generation_config={"temperature": 0.2, "max_output_tokens": 256},
+            model_name=getattr(settings, 'GEMINI_MODEL', 'gemini-3.6-flash'),
+            generation_config={"temperature": 0.2, "max_output_tokens": 1024},
         )
 
         texts = []
@@ -46,8 +47,10 @@ Respond in EXACT JSON format:
   "reasoning": "<1-2 sentence explanation of why these reports represent the exact same underlying problem, referencing common locations or symptoms>",
   "confidence": <float between 0.85 and 1.0 representing how certain you are they are the same issue>
 }}"""
-        response = model.generate_content(prompt, request_options={"timeout": 15})
+        timeout = getattr(settings, 'AI_TIMEOUT_SECONDS', 20)
+        response = model.generate_content(prompt, request_options={"timeout": timeout})
         raw = response.text.strip()
+        print("GEMINI RAW:", raw)
         
         import re, json
         raw = re.sub(r'^```(?:json)?\s*', '', raw)
@@ -70,16 +73,46 @@ Respond in EXACT JSON format:
 
 def _check_escalation(twin: ProblemTwin):
     """
-    Check if the twin is escalating based on the number of linked reports.
-    Updates the risk_level if appropriate.
+    Check if the twin is escalating based on the number of linked reports
+    and the rate of new reports coming in over time.
     """
+    now = timezone.now()
+    
+    # 1. Trend-based check: Last 24h vs the 6 days before that
+    recent_start = now - timedelta(days=1)
+    prior_start = now - timedelta(days=7)
+    
+    recent_reports = twin.linked_challenges.filter(created_at__gte=recent_start).count()
+    prior_reports = twin.linked_challenges.filter(created_at__gte=prior_start, created_at__lt=recent_start).count()
+    
+    recent_rate = recent_reports / 1.0  # Daily rate in last 1 day
+    prior_rate = prior_reports / 6.0    # Daily rate in prior 6 days
+    
+    reason = None
+    
+    # Escalate if recent rate is 2x prior rate, and we have a meaningful volume (e.g. >= 3 recent)
+    if prior_rate > 0 and recent_rate >= (prior_rate * 2) and recent_reports >= 3:
+        if twin.risk_level != ProblemTwin.RISK_ESCALATED:
+            twin.risk_level = ProblemTwin.RISK_ESCALATED
+            twin.save(update_fields=['risk_level'])
+        reason = f"Trend escalation: Recent daily report rate ({recent_rate:.1f}/day) is >= 2x the prior 6-day rate ({prior_rate:.1f}/day)."
+        return reason
+
+    # 2. Fallback static check
     report_count = twin.linked_challenges.count()
-    if report_count >= 10 and twin.risk_level != ProblemTwin.RISK_ESCALATED:
-        twin.risk_level = ProblemTwin.RISK_ESCALATED
-        twin.save(update_fields=['risk_level'])
+    if report_count >= 10:
+        if twin.risk_level != ProblemTwin.RISK_ESCALATED:
+            twin.risk_level = ProblemTwin.RISK_ESCALATED
+            twin.save(update_fields=['risk_level'])
+        reason = f"Static escalation: Total report count ({report_count}) reached threshold (10)."
+        return reason
     elif report_count >= 5 and twin.risk_level == ProblemTwin.RISK_LOW:
         twin.risk_level = ProblemTwin.RISK_MEDIUM
         twin.save(update_fields=['risk_level'])
+        reason = f"Static upgrade: Medium risk reached ({report_count} reports)."
+        return reason
+        
+    return None
 
 
 def detect_problem_twin(challenge: Challenge):
